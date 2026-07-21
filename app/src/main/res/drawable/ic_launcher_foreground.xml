@@ -4,8 +4,14 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     
-    <!-- Centered bold white 'G' matching icon design -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 75.5,36.2 A 28,28 0 1,0 82,54 L 82,47 L 50,47 L 50,61 L 68,61 L 68,54 A 14,14 0 1,1 64.9,45.1 L 75.5,36.2 Z" />
+    <group
+        android:scaleX="0.65"
+        android:scaleY="0.65"
+        android:pivotX="54"
+        android:pivotY="54">
+        <!-- Centered bold white 'G' matching icon design -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 75.5,36.2 A 28,28 0 1,0 82,54 L 82,47 L 50,47 L 50,61 L 68,61 L 68,54 A 14,14 0 1,1 64.9,45.1 L 75.5,36.2 Z" />
+    </group>
 </vector>

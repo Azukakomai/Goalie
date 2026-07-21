@@ -38,21 +38,28 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
             initialValue = emptyList()
         )
 
-    private val start30DaysEpoch = LocalDate.now().minusDays(29).toEpochDay()
+    private val start90DaysEpoch = LocalDate.now().minusDays(89).toEpochDay()
     private val endTodayEpoch = LocalDate.now().toEpochDay()
 
-    val all30DaysTasks: StateFlow<List<Task>> = taskDao.getTasksInRange(start30DaysEpoch, endTodayEpoch)
+    val allTasks: StateFlow<List<Task>> = taskDao.getAllTasks()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    val stats30Days: StateFlow<List<DayStat>> = all30DaysTasks.map { tasks ->
+    val all90DaysTasks: StateFlow<List<Task>> = taskDao.getTasksInRange(start90DaysEpoch, endTodayEpoch)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val stats90Days: StateFlow<List<DayStat>> = all90DaysTasks.map { tasks ->
         val tasksByDay = tasks.groupBy { it.dateEpochDay }
         val today = LocalDate.now()
 
-        (29 downTo 0).map { daysAgo ->
+        (89 downTo 0).map { daysAgo ->
             val date = today.minusDays(daysAgo.toLong())
             val epochDay = date.toEpochDay()
             val dayTasks = tasksByDay[epochDay] ?: emptyList()
@@ -83,7 +90,15 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
         initialValue = emptyList()
     )
 
-    val stats7Days: StateFlow<List<DayStat>> = stats30Days.map { list ->
+    val stats30Days: StateFlow<List<DayStat>> = stats90Days.map { list ->
+        if (list.size >= 30) list.takeLast(30) else list
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    val stats7Days: StateFlow<List<DayStat>> = stats90Days.map { list ->
         if (list.size >= 7) list.takeLast(7) else list
     }.stateIn(
         scope = viewModelScope,
@@ -266,6 +281,20 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
             }
             sampleTasks.forEach { taskDao.insertTask(it) }
             syncRecurringTasksForDate(todayEpochDay)
+        }
+    }
+
+    fun importTasks(newTasks: List<Task>) {
+        viewModelScope.launch {
+            taskDao.deleteAllTasks()
+            newTasks.forEach { taskDao.insertTask(it) }
+            syncRecurringTasksForDate(todayEpochDay)
+        }
+    }
+
+    fun resetAllTasks() {
+        viewModelScope.launch {
+            taskDao.deleteAllTasks()
         }
     }
 }

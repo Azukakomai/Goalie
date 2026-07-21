@@ -122,22 +122,29 @@ class NutritionViewModel(private val nutritionDao: NutritionDao) : ViewModel() {
         initialValue = DayMacroSummary(LocalDate.now())
     )
 
-    private val start30DaysEpoch = LocalDate.now().minusDays(29).toEpochDay()
-    private val endTodayEpoch = LocalDate.now().toEpochDay()
-
-    val all30DaysMeals: StateFlow<List<MealLog>> = nutritionDao.getMealsInRange(start30DaysEpoch, endTodayEpoch)
+    val allMeals: StateFlow<List<MealLog>> = nutritionDao.getAllMeals()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    val heatmap30Days: StateFlow<List<NutritionDayStat>> = combine(all30DaysMeals, goals) { meals, activeGoals ->
+    private val start90DaysEpoch = LocalDate.now().minusDays(89).toEpochDay()
+    private val endTodayEpoch = LocalDate.now().toEpochDay()
+
+    val all90DaysMeals: StateFlow<List<MealLog>> = nutritionDao.getMealsInRange(start90DaysEpoch, endTodayEpoch)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val heatmap90Days: StateFlow<List<NutritionDayStat>> = combine(all90DaysMeals, goals) { meals, activeGoals ->
         val mealsByDay = meals.groupBy { it.dateEpochDay }
         val today = LocalDate.now()
         val enabledGoals = activeGoals.filter { it.isEnabled }
 
-        (29 downTo 0).map { daysAgo ->
+        (89 downTo 0).map { daysAgo ->
             val date = today.minusDays(daysAgo.toLong())
             val epochDay = date.toEpochDay()
             val dayMeals = mealsByDay[epochDay] ?: emptyList()
@@ -188,6 +195,14 @@ class NutritionViewModel(private val nutritionDao: NutritionDao) : ViewModel() {
                 level = level
             )
         }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    val heatmap30Days: StateFlow<List<NutritionDayStat>> = heatmap90Days.map { list ->
+        if (list.size >= 30) list.takeLast(30) else list
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -248,6 +263,34 @@ class NutritionViewModel(private val nutritionDao: NutritionDao) : ViewModel() {
     fun deleteGoal(goal: NutritionGoal) {
         viewModelScope.launch {
             nutritionDao.deleteGoal(goal)
+        }
+    }
+
+    fun updateGoalDetails(goal: NutritionGoal, metric: NutritionMetric, operator: GoalOperator, targetValue: Float) {
+        viewModelScope.launch {
+            nutritionDao.updateGoal(
+                goal.copy(
+                    metric = metric.name,
+                    operator = operator.name,
+                    targetValue = targetValue.coerceAtLeast(0f)
+                )
+            )
+        }
+    }
+
+    fun importNutrition(newMeals: List<MealLog>, newGoals: List<NutritionGoal>) {
+        viewModelScope.launch {
+            nutritionDao.deleteAllMeals()
+            nutritionDao.deleteAllGoals()
+            newMeals.forEach { nutritionDao.insertMeal(it) }
+            newGoals.forEach { nutritionDao.insertGoal(it) }
+        }
+    }
+
+    fun resetAllNutrition() {
+        viewModelScope.launch {
+            nutritionDao.deleteAllMeals()
+            nutritionDao.deleteAllGoals()
         }
     }
 }

@@ -39,4 +39,10 @@ interface NutritionDao {
 
     @Delete
     suspend fun deleteGoal(goal: NutritionGoal)
+
+    @Query("DELETE FROM meal_logs")
+    suspend fun deleteAllMeals()
+
+    @Query("DELETE FROM nutrition_goals")
+    suspend fun deleteAllGoals()
 }

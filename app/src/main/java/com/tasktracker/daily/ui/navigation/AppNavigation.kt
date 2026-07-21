@@ -96,7 +96,10 @@ fun AppNavigation(
                 NutritionScreen(viewModel = nutritionViewModel)
             }
             composable(Screen.Dashboard.route) {
-                DashboardScreen(viewModel = viewModel)
+                DashboardScreen(
+                    viewModel = viewModel,
+                    nutritionViewModel = nutritionViewModel
+                )
             }
         }
     }

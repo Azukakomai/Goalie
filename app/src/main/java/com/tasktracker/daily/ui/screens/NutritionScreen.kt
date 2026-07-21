@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Today
@@ -93,11 +94,12 @@ fun NutritionScreen(
     val summary by viewModel.selectedDayMacroSummary.collectAsState()
     val meals by viewModel.mealsForSelectedDate.collectAsState()
     val goals by viewModel.goals.collectAsState()
-    val heatmapStats by viewModel.heatmap30Days.collectAsState()
+    val heatmapStats by viewModel.heatmap90Days.collectAsState()
 
     var showAddMealDialog by remember { mutableStateOf(false) }
     var showAddGoalDialog by remember { mutableStateOf(false) }
     var showManageGoals by remember { mutableStateOf(false) }
+    var goalToEdit by remember { mutableStateOf<NutritionGoal?>(null) }
 
     val today = LocalDate.now()
     val isToday = selectedDate == today
@@ -263,7 +265,12 @@ fun NutritionScreen(
                                         totalSugar = summary.totalSugar,
                                         totalKcal = summary.totalKcal
                                     )
-                                    GoalConditionBadge(goal = goal, isMet = isMet, summary = summary)
+                                    GoalConditionBadge(
+                                        goal = goal,
+                                        isMet = isMet,
+                                        summary = summary,
+                                        onEditClick = { goalToEdit = goal }
+                                    )
                                 }
                             }
                         }
@@ -364,13 +371,22 @@ fun NutritionScreen(
             )
         }
 
-        // Add Goal Dialog
-        if (showAddGoalDialog) {
-            AddGoalDialog(
-                onDismiss = { showAddGoalDialog = false },
-                onAddGoal = { metric, operator, targetVal ->
-                    viewModel.addGoal(metric, operator, targetVal)
+        // Add / Edit Goal Dialog
+        if (showAddGoalDialog || goalToEdit != null) {
+            AddOrEditGoalDialog(
+                goalToEdit = goalToEdit,
+                onDismiss = {
                     showAddGoalDialog = false
+                    goalToEdit = null
+                },
+                onSaveGoal = { metric, operator, targetVal ->
+                    if (goalToEdit != null) {
+                        viewModel.updateGoalDetails(goalToEdit!!, metric, operator, targetVal)
+                    } else {
+                        viewModel.addGoal(metric, operator, targetVal)
+                    }
+                    showAddGoalDialog = false
+                    goalToEdit = null
                 }
             )
         }
@@ -381,6 +397,10 @@ fun NutritionScreen(
                 goals = goals,
                 onDismiss = { showManageGoals = false },
                 onToggle = { viewModel.toggleGoal(it) },
+                onEdit = { goal ->
+                    showManageGoals = false
+                    goalToEdit = goal
+                },
                 onDelete = { viewModel.deleteGoal(it) },
                 onAddGoalClick = {
                     showManageGoals = false
@@ -541,7 +561,7 @@ fun NutritionHeatmapCard(
             ) {
                 Column {
                     Text(
-                        text = "30-Day Goal Accomplishment",
+                        text = "3-Month Goal Accomplishment",
                         style = MaterialTheme.typography.titleMedium,
                         color = TextPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -553,7 +573,7 @@ fun NutritionHeatmapCard(
                     )
                 }
                 Text(
-                    text = "Last 30 Days",
+                    text = "Scrollable (90 Days)",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextMuted
                 )
@@ -561,15 +581,15 @@ fun NutritionHeatmapCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 30-day Grid (6 columns x 5 rows)
+            // 90-day Scrollable Grid (7 columns)
             LazyVerticalGrid(
-                columns = GridCells.Fixed(6),
+                columns = GridCells.Fixed(7),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(230.dp),
-                userScrollEnabled = false
+                    .height(240.dp),
+                userScrollEnabled = true
             ) {
                 items(stats) { stat ->
                     val isSelected = stat.date == selectedDate
@@ -678,7 +698,8 @@ fun NutritionHeatmapCard(
 fun GoalConditionBadge(
     goal: NutritionGoal,
     isMet: Boolean,
-    summary: com.tasktracker.daily.viewmodel.DayMacroSummary
+    summary: com.tasktracker.daily.viewmodel.DayMacroSummary,
+    onEditClick: () -> Unit
 ) {
     val currentVal = when (goal.nutritionMetric) {
         NutritionMetric.PROTEIN -> summary.totalProtein
@@ -696,7 +717,7 @@ fun GoalConditionBadge(
             .clip(RoundedCornerShape(10.dp))
             .background(if (isMet) PrimaryEmerald.copy(alpha = 0.12f) else DarkSurfaceVariant)
             .border(1.dp, if (isMet) PrimaryEmerald.copy(alpha = 0.4f) else DarkBorder, RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -724,12 +745,23 @@ fun GoalConditionBadge(
             )
         }
 
-        Text(
-            text = "Current: ${formatVal(currentVal)}${goal.nutritionMetric.unit}",
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isMet) PrimaryEmerald else TextSecondary,
-            fontWeight = FontWeight.SemiBold
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${formatVal(currentVal)}${goal.nutritionMetric.unit}",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isMet) PrimaryEmerald else TextSecondary,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            IconButton(onClick = onEditClick, modifier = Modifier.size(28.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Goal",
+                    tint = TextMuted,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
     }
 }
 
@@ -950,13 +982,21 @@ fun AddMealDialog(
 }
 
 @Composable
-fun AddGoalDialog(
+fun AddOrEditGoalDialog(
+    goalToEdit: NutritionGoal? = null,
     onDismiss: () -> Unit,
-    onAddGoal: (metric: NutritionMetric, operator: GoalOperator, targetVal: Float) -> Unit
+    onSaveGoal: (metric: NutritionMetric, operator: GoalOperator, targetVal: Float) -> Unit
 ) {
-    var selectedMetric by remember { mutableStateOf(NutritionMetric.PROTEIN) }
-    var selectedOperator by remember { mutableStateOf(GoalOperator.GREATER_THAN) }
-    var targetValueStr by remember { mutableStateOf("130") }
+    val isEditing = goalToEdit != null
+    var selectedMetric by remember { mutableStateOf(goalToEdit?.nutritionMetric ?: NutritionMetric.PROTEIN) }
+    var selectedOperator by remember { mutableStateOf(goalToEdit?.goalOperator ?: GoalOperator.GREATER_THAN) }
+    var targetValueStr by remember {
+        mutableStateOf(
+            goalToEdit?.let {
+                if (it.targetValue % 1f == 0f) it.targetValue.toInt().toString() else it.targetValue.toString()
+            } ?: "130"
+        )
+    }
 
     var metricExpanded by remember { mutableStateOf(false) }
     var operatorExpanded by remember { mutableStateOf(false) }
@@ -965,7 +1005,12 @@ fun AddGoalDialog(
         onDismissRequest = onDismiss,
         containerColor = DarkSurface,
         title = {
-            Text("Add Goal Condition", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (isEditing) "Edit Goal Condition" else "Add Goal Condition",
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold
+            )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -975,70 +1020,107 @@ fun AddGoalDialog(
                     color = TextMuted
                 )
 
-                // Select Metric Dropdown
-                Box {
-                    OutlinedTextField(
-                        value = "${selectedMetric.displayName} (${selectedMetric.unit})",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Nutritional Metric") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { metricExpanded = true },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
-                        )
-                    )
-                    DropdownMenu(
-                        expanded = metricExpanded,
-                        onDismissRequest = { metricExpanded = false },
-                        modifier = Modifier.background(DarkSurface)
+                // 1. Select Metric Chip Buttons
+                Text(
+                    text = "Nutritional Metric",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        NutritionMetric.values().forEach { metric ->
-                            DropdownMenuItem(
-                                text = { Text("${metric.displayName} (${metric.unit})", color = TextPrimary) },
-                                onClick = {
-                                    selectedMetric = metric
-                                    metricExpanded = false
-                                }
-                            )
+                        listOf(NutritionMetric.PROTEIN, NutritionMetric.FAT, NutritionMetric.CARB).forEach { metric ->
+                            val isSelected = metric == selectedMetric
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) PrimaryEmerald else DarkSurfaceVariant)
+                                    .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                                    .clickable { selectedMetric = metric }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${metric.displayName} (${metric.unit})",
+                                    fontSize = 11.sp,
+                                    color = if (isSelected) DarkBackground else TextPrimary,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(NutritionMetric.SUGAR, NutritionMetric.KCAL).forEach { metric ->
+                            val isSelected = metric == selectedMetric
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) PrimaryEmerald else DarkSurfaceVariant)
+                                    .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                                    .clickable { selectedMetric = metric }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${metric.displayName} (${metric.unit})",
+                                    fontSize = 11.sp,
+                                    color = if (isSelected) DarkBackground else TextPrimary,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
 
-                // Select Operator Dropdown
-                Box {
-                    OutlinedTextField(
-                        value = "${selectedOperator.symbol} (${selectedOperator.description})",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Operator Condition") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { operatorExpanded = true },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
-                        )
-                    )
-                    DropdownMenu(
-                        expanded = operatorExpanded,
-                        onDismissRequest = { operatorExpanded = false },
-                        modifier = Modifier.background(DarkSurface)
-                    ) {
-                        GoalOperator.values().forEach { op ->
-                            DropdownMenuItem(
-                                text = { Text("${op.symbol} (${op.description})", color = TextPrimary) },
-                                onClick = {
-                                    selectedOperator = op
-                                    operatorExpanded = false
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // 2. Select Operator Condition Buttons
+                Text(
+                    text = "Operator Condition",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    GoalOperator.values().forEach { op ->
+                        val isSelected = op == selectedOperator
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSelected) PrimaryEmerald.copy(alpha = 0.15f) else DarkSurfaceVariant)
+                                .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                                .clickable { selectedOperator = op }
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${op.symbol}  ${op.description}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (isSelected) PrimaryEmerald else TextPrimary,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = PrimaryEmerald,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
@@ -1065,12 +1147,12 @@ fun AddGoalDialog(
                 onClick = {
                     val valFloat = targetValueStr.toFloatOrNull()
                     if (valFloat != null) {
-                        onAddGoal(selectedMetric, selectedOperator, valFloat)
+                        onSaveGoal(selectedMetric, selectedOperator, valFloat)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
             ) {
-                Text("Add Goal", fontWeight = FontWeight.Bold)
+                Text(if (isEditing) "Save Changes" else "Add Goal", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -1086,6 +1168,7 @@ fun ManageGoalsDialog(
     goals: List<NutritionGoal>,
     onDismiss: () -> Unit,
     onToggle: (NutritionGoal) -> Unit,
+    onEdit: (NutritionGoal) -> Unit,
     onDelete: (NutritionGoal) -> Unit,
     onAddGoalClick: () -> Unit
 ) {
@@ -1127,6 +1210,9 @@ fun ManageGoalsDialog(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 TextButton(onClick = { onToggle(goal) }) {
                                     Text(if (goal.isEnabled) "Enabled" else "Disabled", color = if (goal.isEnabled) PrimaryEmerald else TextMuted)
+                                }
+                                IconButton(onClick = { onEdit(goal) }, modifier = Modifier.size(28.dp)) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = PrimaryEmerald, modifier = Modifier.size(18.dp))
                                 }
                                 IconButton(onClick = { onDelete(goal) }, modifier = Modifier.size(28.dp)) {
                                     Icon(Icons.Default.Delete, contentDescription = "Delete", tint = TextMuted, modifier = Modifier.size(18.dp))

@@ -70,12 +70,12 @@ fun HeatmapGrid(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "30-Day Activity Heatmap",
+                    text = "3-Month Activity Heatmap",
                     style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Last 30 Days",
+                    text = "Scrollable (90 Days)",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextMuted
                 )
@@ -83,15 +83,15 @@ fun HeatmapGrid(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 30 Days Grid (6 columns x 5 rows)
+            // 90 Days Scrollable Grid (7 columns)
             LazyVerticalGrid(
-                columns = GridCells.Fixed(6),
+                columns = GridCells.Fixed(7),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp),
-                userScrollEnabled = false
+                    .height(240.dp),
+                userScrollEnabled = true
             ) {
                 items(stats) { stat ->
                     val squareColor = getHeatmapColor(stat.level)

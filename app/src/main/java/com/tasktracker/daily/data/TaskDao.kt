@@ -19,8 +19,14 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY dateEpochDay DESC")
     fun getAllTasks(): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE recurrenceType != 'NONE' AND parentTaskId IS NULL")
+    suspend fun getRecurringTaskTemplates(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE (parentTaskId = :parentId OR id = :parentId) AND dateEpochDay = :epochDay LIMIT 1")
+    suspend fun getInstanceForDay(parentId: Int, epochDay: Long): Task?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: Task)
+    suspend fun insertTask(task: Task): Long
 
     @Update
     suspend fun updateTask(task: Task)
@@ -28,6 +34,6 @@ interface TaskDao {
     @Delete
     suspend fun deleteTask(task: Task)
 
-    @Query("DELETE FROM tasks WHERE id = :taskId")
-    suspend fun deleteTaskById(taskId: Int)
+    @Query("DELETE FROM tasks WHERE id = :taskId OR parentTaskId = :taskId")
+    suspend fun deleteTaskAndInstances(taskId: Int)
 }

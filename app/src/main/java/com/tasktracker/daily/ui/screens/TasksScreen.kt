@@ -79,7 +79,7 @@ fun TasksScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Today's Tasks",
+                        text = "Daily Tasks",
                         style = MaterialTheme.typography.headlineMedium,
                         color = TextPrimary
                     )
@@ -115,7 +115,7 @@ fun TasksScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Daily Goal Progress",
+                            text = "Daily Progress",
                             style = MaterialTheme.typography.titleMedium,
                             color = TextPrimary,
                             modifier = Modifier.weight(1f)
@@ -197,8 +197,8 @@ fun TasksScreen(
         if (showAddDialog) {
             AddTaskDialog(
                 onDismiss = { showAddDialog = false },
-                onConfirm = { title ->
-                    viewModel.addTask(title)
+                onConfirm = { title, recurrenceType, customIntervalDays ->
+                    viewModel.addTask(title, recurrenceType, customIntervalDays)
                     showAddDialog = false
                 }
             )

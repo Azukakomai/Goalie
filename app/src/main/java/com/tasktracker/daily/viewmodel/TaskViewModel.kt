@@ -109,16 +109,18 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
     fun addTask(
         title: String,
         recurrenceType: RecurrenceType = RecurrenceType.NONE,
-        customIntervalDays: Int = 1
+        customIntervalDays: Int = 1,
+        startDate: LocalDate = LocalDate.now()
     ) {
         if (title.isBlank()) return
         viewModelScope.launch {
+            val startEpoch = startDate.toEpochDay()
             val task = Task(
                 title = title.trim(),
-                dateEpochDay = todayEpochDay,
+                dateEpochDay = startEpoch,
                 recurrenceType = recurrenceType.name,
                 customIntervalDays = customIntervalDays.coerceAtLeast(1),
-                startDateEpochDay = todayEpochDay
+                startDateEpochDay = startEpoch
             )
             taskDao.insertTask(task)
             syncRecurringTasksForDate(todayEpochDay)
@@ -129,14 +131,18 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
         task: Task,
         title: String,
         recurrenceType: RecurrenceType = RecurrenceType.NONE,
-        customIntervalDays: Int = 1
+        customIntervalDays: Int = 1,
+        startDate: LocalDate = LocalDate.ofEpochDay(task.startDateEpochDay)
     ) {
         if (title.isBlank()) return
         viewModelScope.launch {
+            val startEpoch = startDate.toEpochDay()
             val updated = task.copy(
                 title = title.trim(),
+                dateEpochDay = startEpoch,
                 recurrenceType = recurrenceType.name,
-                customIntervalDays = customIntervalDays.coerceAtLeast(1)
+                customIntervalDays = customIntervalDays.coerceAtLeast(1),
+                startDateEpochDay = startEpoch
             )
             taskDao.updateTask(updated)
             syncRecurringTasksForDate(todayEpochDay)

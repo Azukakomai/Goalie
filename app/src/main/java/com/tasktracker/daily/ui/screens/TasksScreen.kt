@@ -204,11 +204,11 @@ fun TasksScreen(
                     showAddDialog = false
                     taskToEdit = null
                 },
-                onConfirm = { title, recurrenceType, customIntervalDays ->
+                onConfirm = { title, recurrenceType, customIntervalDays, startDate ->
                     if (taskToEdit != null) {
-                        viewModel.updateTaskDetails(taskToEdit!!, title, recurrenceType, customIntervalDays)
+                        viewModel.updateTaskDetails(taskToEdit!!, title, recurrenceType, customIntervalDays, startDate)
                     } else {
-                        viewModel.addTask(title, recurrenceType, customIntervalDays)
+                        viewModel.addTask(title, recurrenceType, customIntervalDays, startDate)
                     }
                     showAddDialog = false
                     taskToEdit = null

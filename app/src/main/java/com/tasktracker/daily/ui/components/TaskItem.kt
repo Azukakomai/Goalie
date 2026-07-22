@@ -38,7 +38,12 @@ import com.tasktracker.daily.ui.theme.PrimaryEmerald
 import com.tasktracker.daily.ui.theme.TextMuted
 import com.tasktracker.daily.ui.theme.TextPrimary
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.runtime.remember
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TaskItem(
@@ -90,33 +95,66 @@ fun TaskItem(
                     color = if (task.isCompleted) TextMuted else TextPrimary
                 )
 
-                if (recurrenceType != RecurrenceType.NONE) {
+                val startDate = remember(task.startDateEpochDay) { LocalDate.ofEpochDay(task.startDateEpochDay) }
+                val today = remember { LocalDate.now() }
+                val isFutureStart = startDate.isAfter(today)
+
+                if (recurrenceType != RecurrenceType.NONE || isFutureStart) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(DarkBackground)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Repeat,
-                                    contentDescription = "Recurring",
-                                    tint = PrimaryEmerald,
-                                    modifier = Modifier.height(12.dp).width(12.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                val labelText = if (recurrenceType == RecurrenceType.CUSTOM) {
-                                    "Every ${task.customIntervalDays} days"
-                                } else {
-                                    recurrenceType.label
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        if (isFutureStart) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(DarkBackground)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarToday,
+                                        contentDescription = "Start Date",
+                                        tint = PrimaryEmerald,
+                                        modifier = Modifier.height(12.dp).width(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Starts ${startDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = PrimaryEmerald
+                                    )
                                 }
-                                Text(
-                                    text = labelText,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = PrimaryEmerald
-                                )
+                            }
+                        }
+
+                        if (recurrenceType != RecurrenceType.NONE) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(DarkBackground)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Repeat,
+                                        contentDescription = "Recurring",
+                                        tint = PrimaryEmerald,
+                                        modifier = Modifier.height(12.dp).width(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    val labelText = if (recurrenceType == RecurrenceType.CUSTOM) {
+                                        "Every ${task.customIntervalDays} days"
+                                    } else {
+                                        recurrenceType.label
+                                    }
+                                    Text(
+                                        text = labelText,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = PrimaryEmerald
+                                    )
+                                }
                             }
                         }
                     }

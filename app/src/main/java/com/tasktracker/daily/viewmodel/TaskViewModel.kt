@@ -125,6 +125,24 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
         }
     }
 
+    fun updateTaskDetails(
+        task: Task,
+        title: String,
+        recurrenceType: RecurrenceType = RecurrenceType.NONE,
+        customIntervalDays: Int = 1
+    ) {
+        if (title.isBlank()) return
+        viewModelScope.launch {
+            val updated = task.copy(
+                title = title.trim(),
+                recurrenceType = recurrenceType.name,
+                customIntervalDays = customIntervalDays.coerceAtLeast(1)
+            )
+            taskDao.updateTask(updated)
+            syncRecurringTasksForDate(todayEpochDay)
+        }
+    }
+
     fun toggleTask(task: Task) {
         viewModelScope.launch {
             taskDao.updateTask(task.copy(isCompleted = !task.isCompleted))

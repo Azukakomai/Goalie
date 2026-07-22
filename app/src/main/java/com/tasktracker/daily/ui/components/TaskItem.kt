@@ -38,10 +38,13 @@ import com.tasktracker.daily.ui.theme.PrimaryEmerald
 import com.tasktracker.daily.ui.theme.TextMuted
 import com.tasktracker.daily.ui.theme.TextPrimary
 
+import androidx.compose.material.icons.filled.Edit
+
 @Composable
 fun TaskItem(
     task: Task,
     onToggle: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -118,6 +121,14 @@ fun TaskItem(
                         }
                     }
                 }
+            }
+
+            IconButton(onClick = onEdit) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Task",
+                    tint = TextMuted
+                )
             }
 
             IconButton(onClick = onDelete) {

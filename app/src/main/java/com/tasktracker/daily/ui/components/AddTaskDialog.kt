@@ -31,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.data.RecurrenceType
+import com.tasktracker.daily.data.Task
 import com.tasktracker.daily.ui.theme.DarkBackground
 import com.tasktracker.daily.ui.theme.DarkBorder
 import com.tasktracker.daily.ui.theme.DarkSurface
@@ -44,13 +46,15 @@ import com.tasktracker.daily.ui.theme.TextSecondary
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AddTaskDialog(
+fun AddOrEditTaskDialog(
+    taskToEdit: Task? = null,
     onDismiss: () -> Unit,
     onConfirm: (title: String, recurrenceType: RecurrenceType, customIntervalDays: Int) -> Unit
 ) {
-    var taskTitle by remember { mutableStateOf("") }
-    var selectedRecurrence by remember { mutableStateOf(RecurrenceType.NONE) }
-    var customIntervalText by remember { mutableStateOf("2") }
+    val isEditing = taskToEdit != null
+    var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
+    var selectedRecurrence by remember { mutableStateOf(taskToEdit?.let { RecurrenceType.fromString(it.recurrenceType) } ?: RecurrenceType.NONE) }
+    var customIntervalText by remember { mutableStateOf(taskToEdit?.customIntervalDays?.toString() ?: "2") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -58,15 +62,16 @@ fun AddTaskDialog(
         containerColor = DarkSurface,
         title = {
             Text(
-                text = "New Goal / Task",
+                text = if (isEditing) "Edit Task / Goal" else "New Goal / Task",
                 style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold
             )
         },
         text = {
             Column {
                 Text(
-                    text = "What do you want to accomplish?",
+                    text = if (isEditing) "Modify your task details" else "What do you want to accomplish?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -179,7 +184,7 @@ fun AddTaskDialog(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Add Task")
+                Text(if (isEditing) "Save Changes" else "Add Task", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -188,4 +193,13 @@ fun AddTaskDialog(
             }
         }
     )
+}
+
+// Backwards compatibility alias for AddTaskDialog
+@Composable
+fun AddTaskDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (title: String, recurrenceType: RecurrenceType, customIntervalDays: Int) -> Unit
+) {
+    AddOrEditTaskDialog(taskToEdit = null, onDismiss = onDismiss, onConfirm = onConfirm)
 }

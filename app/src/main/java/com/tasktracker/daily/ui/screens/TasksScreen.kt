@@ -34,7 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.tasktracker.daily.ui.components.AddTaskDialog
+import com.tasktracker.daily.data.Task
+import com.tasktracker.daily.ui.components.AddOrEditTaskDialog
 import com.tasktracker.daily.ui.components.TaskItem
 import com.tasktracker.daily.ui.theme.DarkBackground
 import com.tasktracker.daily.ui.theme.DarkBorder
@@ -54,6 +55,7 @@ fun TasksScreen(
 ) {
     val tasks by viewModel.todayTasks.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var taskToEdit by remember { mutableStateOf<Task?>(null) }
 
     val todayStr = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d"))
     val completedCount = tasks.count { it.isCompleted }
@@ -174,6 +176,7 @@ fun TasksScreen(
                         TaskItem(
                             task = task,
                             onToggle = { viewModel.toggleTask(task) },
+                            onEdit = { taskToEdit = task },
                             onDelete = { viewModel.deleteTask(task) }
                         )
                     }
@@ -194,12 +197,21 @@ fun TasksScreen(
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
         }
 
-        if (showAddDialog) {
-            AddTaskDialog(
-                onDismiss = { showAddDialog = false },
-                onConfirm = { title, recurrenceType, customIntervalDays ->
-                    viewModel.addTask(title, recurrenceType, customIntervalDays)
+        if (showAddDialog || taskToEdit != null) {
+            AddOrEditTaskDialog(
+                taskToEdit = taskToEdit,
+                onDismiss = {
                     showAddDialog = false
+                    taskToEdit = null
+                },
+                onConfirm = { title, recurrenceType, customIntervalDays ->
+                    if (taskToEdit != null) {
+                        viewModel.updateTaskDetails(taskToEdit!!, title, recurrenceType, customIntervalDays)
+                    } else {
+                        viewModel.addTask(title, recurrenceType, customIntervalDays)
+                    }
+                    showAddDialog = false
+                    taskToEdit = null
                 }
             )
         }

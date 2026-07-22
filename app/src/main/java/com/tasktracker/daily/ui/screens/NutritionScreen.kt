@@ -43,6 +43,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -981,6 +984,7 @@ fun AddMealDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddOrEditGoalDialog(
     goalToEdit: NutritionGoal? = null,
@@ -1020,107 +1024,78 @@ fun AddOrEditGoalDialog(
                     color = TextMuted
                 )
 
-                // 1. Select Metric Chip Buttons
-                Text(
-                    text = "Nutritional Metric",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                // 1. Nutritional Metric Exposed Dropdown Box
+                ExposedDropdownMenuBox(
+                    expanded = metricExpanded,
+                    onExpandedChange = { metricExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = "${selectedMetric.displayName} (${selectedMetric.unit})",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Nutritional Metric") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = metricExpanded) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = PrimaryEmerald,
+                            unfocusedBorderColor = DarkBorder,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = metricExpanded,
+                        onDismissRequest = { metricExpanded = false },
+                        modifier = Modifier.background(DarkSurface)
                     ) {
-                        listOf(NutritionMetric.PROTEIN, NutritionMetric.FAT, NutritionMetric.CARB).forEach { metric ->
-                            val isSelected = metric == selectedMetric
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) PrimaryEmerald else DarkSurfaceVariant)
-                                    .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
-                                    .clickable { selectedMetric = metric }
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${metric.displayName} (${metric.unit})",
-                                    fontSize = 11.sp,
-                                    color = if (isSelected) DarkBackground else TextPrimary,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                )
-                            }
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        listOf(NutritionMetric.SUGAR, NutritionMetric.KCAL).forEach { metric ->
-                            val isSelected = metric == selectedMetric
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) PrimaryEmerald else DarkSurfaceVariant)
-                                    .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
-                                    .clickable { selectedMetric = metric }
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${metric.displayName} (${metric.unit})",
-                                    fontSize = 11.sp,
-                                    color = if (isSelected) DarkBackground else TextPrimary,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                )
-                            }
+                        NutritionMetric.values().forEach { metric ->
+                            DropdownMenuItem(
+                                text = { Text("${metric.displayName} (${metric.unit})", color = TextPrimary) },
+                                onClick = {
+                                    selectedMetric = metric
+                                    metricExpanded = false
+                                }
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // 2. Select Operator Condition Buttons
-                Text(
-                    text = "Operator Condition",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    GoalOperator.values().forEach { op ->
-                        val isSelected = op == selectedOperator
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) PrimaryEmerald.copy(alpha = 0.15f) else DarkSurfaceVariant)
-                                .border(1.dp, if (isSelected) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
-                                .clickable { selectedOperator = op }
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "${op.symbol}  ${op.description}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = if (isSelected) PrimaryEmerald else TextPrimary,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = PrimaryEmerald,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                // 2. Operator Condition Exposed Dropdown Box
+                ExposedDropdownMenuBox(
+                    expanded = operatorExpanded,
+                    onExpandedChange = { operatorExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = "${selectedOperator.symbol} (${selectedOperator.description})",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Operator Condition") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = operatorExpanded) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = PrimaryEmerald,
+                            unfocusedBorderColor = DarkBorder,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = operatorExpanded,
+                        onDismissRequest = { operatorExpanded = false },
+                        modifier = Modifier.background(DarkSurface)
+                    ) {
+                        GoalOperator.values().forEach { op ->
+                            DropdownMenuItem(
+                                text = { Text("${op.symbol} (${op.description})", color = TextPrimary) },
+                                onClick = {
+                                    selectedOperator = op
+                                    operatorExpanded = false
                                 }
-                            }
+                            )
                         }
                     }
                 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.ui.components.HeatmapGrid
 import com.tasktracker.daily.ui.components.SettingsDialog
 import com.tasktracker.daily.ui.components.WeeklyChart
+import com.tasktracker.daily.ui.components.WeeklyTaskCalendar
 import com.tasktracker.daily.ui.theme.DarkBackground
 import com.tasktracker.daily.ui.theme.DarkBorder
 import com.tasktracker.daily.ui.theme.DarkSurface
@@ -102,6 +103,15 @@ fun DashboardScreen(
 
         // 7-Day Analytics Chart
         WeeklyChart(stats = stats7Days)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Weekly Schedule Calendar & Stacked Day Tasks
+        WeeklyTaskCalendar(
+            allTasks = tasks,
+            onToggleTask = { viewModel.toggleTask(it) },
+            onDeleteTask = { viewModel.deleteTask(it) }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 

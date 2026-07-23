@@ -16,9 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -36,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.data.RecurrenceType
 import com.tasktracker.daily.data.Task
 import com.tasktracker.daily.ui.theme.DarkBackground
@@ -157,8 +163,9 @@ fun AddOrEditTaskDialog(
                 val isIn2Days = selectedDate == today.plusDays(2)
                 val isCustom = !isToday && !isTomorrow && !isIn2Days
 
+                // Preset Chips Row (3 buttons)
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     // Today chip
@@ -169,14 +176,14 @@ fun AddOrEditTaskDialog(
                             .background(if (isToday) PrimaryEmerald else DarkBackground)
                             .border(1.dp, if (isToday) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Today",
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isToday) DarkBackground else TextPrimary,
-                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium
                         )
                     }
 
@@ -188,14 +195,14 @@ fun AddOrEditTaskDialog(
                             .background(if (isTomorrow) PrimaryEmerald else DarkBackground)
                             .border(1.dp, if (isTomorrow) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today.plusDays(1) }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Tomorrow",
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isTomorrow) DarkBackground else TextPrimary,
-                            fontWeight = if (isTomorrow) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (isTomorrow) FontWeight.Bold else FontWeight.Medium
                         )
                     }
 
@@ -207,33 +214,53 @@ fun AddOrEditTaskDialog(
                             .background(if (isIn2Days) PrimaryEmerald else DarkBackground)
                             .border(1.dp, if (isIn2Days) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today.plusDays(2) }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "+2 Days",
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isIn2Days) DarkBackground else TextPrimary,
-                            fontWeight = if (isIn2Days) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (isIn2Days) FontWeight.Bold else FontWeight.Medium
                         )
                     }
+                }
 
-                    // Custom Date chip
-                    Box(
-                        modifier = Modifier
-                            .weight(1.1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isCustom) PrimaryEmerald else DarkBackground)
-                            .border(1.dp, if (isCustom) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
-                            .clickable { openDatePicker() }
-                            .padding(vertical = 6.dp),
-                        contentAlignment = Alignment.Center
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Custom Date Picker Bar (Full Width)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isCustom) PrimaryEmerald.copy(alpha = 0.15f) else DarkBackground)
+                        .border(1.dp, if (isCustom) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                        .clickable { openDatePicker() }
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                contentDescription = "Pick Custom Date",
+                                tint = if (isCustom) PrimaryEmerald else TextMuted,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isCustom) "Custom Date: ${selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy"))}" else "Pick Specific Date...",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isCustom) PrimaryEmerald else TextSecondary,
+                                fontWeight = if (isCustom) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
                         Text(
-                            text = if (isCustom) selectedDate.format(DateTimeFormatter.ofPattern("MMM d")) else "Pick Date 📅",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isCustom) DarkBackground else TextPrimary,
-                            fontWeight = if (isCustom) FontWeight.Bold else FontWeight.Normal
+                            text = "📅",
+                            fontSize = 12.sp
                         )
                     }
                 }

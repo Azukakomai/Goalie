@@ -103,6 +103,7 @@ fun NutritionScreen(
     var showAddGoalDialog by remember { mutableStateOf(false) }
     var showManageGoals by remember { mutableStateOf(false) }
     var goalToEdit by remember { mutableStateOf<NutritionGoal?>(null) }
+    var mealToEdit by remember { mutableStateOf<MealLog?>(null) }
 
     val today = LocalDate.now()
     val isToday = selectedDate == today
@@ -341,7 +342,11 @@ fun NutritionScreen(
                 }
             } else {
                 items(meals, key = { it.id }) { meal ->
-                    MealItemCard(meal = meal, onDelete = { viewModel.deleteMeal(meal) })
+                    MealItemCard(
+                        meal = meal,
+                        onEdit = { mealToEdit = meal },
+                        onDelete = { viewModel.deleteMeal(meal) }
+                    )
                 }
             }
 
@@ -363,13 +368,22 @@ fun NutritionScreen(
             Icon(Icons.Default.Add, contentDescription = "Add Meal")
         }
 
-        // Add Meal Dialog
-        if (showAddMealDialog) {
-            AddMealDialog(
-                onDismiss = { showAddMealDialog = false },
-                onAddMeal = { name, fat, carb, protein, sugar, kcal ->
-                    viewModel.addMeal(name, fat, carb, protein, sugar, kcal)
+        // Add / Edit Meal Dialog
+        if (showAddMealDialog || mealToEdit != null) {
+            AddOrEditMealDialog(
+                mealToEdit = mealToEdit,
+                onDismiss = {
                     showAddMealDialog = false
+                    mealToEdit = null
+                },
+                onSaveMeal = { name, fat, carb, protein, sugar, kcal ->
+                    if (mealToEdit != null) {
+                        viewModel.updateMealDetails(mealToEdit!!, name, fat, carb, protein, sugar, kcal)
+                    } else {
+                        viewModel.addMeal(name, fat, carb, protein, sugar, kcal)
+                    }
+                    showAddMealDialog = false
+                    mealToEdit = null
                 }
             )
         }
@@ -771,6 +785,7 @@ fun GoalConditionBadge(
 @Composable
 fun MealItemCard(
     meal: MealLog,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -814,7 +829,15 @@ fun MealItemCard(
                     color = PrimaryEmerald,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Meal",
+                        tint = TextMuted,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
                 IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -846,22 +869,53 @@ fun MacroTextBadge(text: String, color: Color) {
 }
 
 @Composable
-fun AddMealDialog(
+fun AddOrEditMealDialog(
+    mealToEdit: MealLog? = null,
     onDismiss: () -> Unit,
-    onAddMeal: (name: String, fat: Float, carb: Float, protein: Float, sugar: Float, kcal: Int) -> Unit
+    onSaveMeal: (name: String, fat: Float, carb: Float, protein: Float, sugar: Float, kcal: Int) -> Unit
 ) {
-    var mealName by remember { mutableStateOf("") }
-    var fatStr by remember { mutableStateOf("") }
-    var carbStr by remember { mutableStateOf("") }
-    var proteinStr by remember { mutableStateOf("") }
-    var sugarStr by remember { mutableStateOf("") }
-    var kcalStr by remember { mutableStateOf("") }
+    val isEditing = mealToEdit != null
+    var mealName by remember { mutableStateOf(mealToEdit?.mealName ?: "") }
+    var fatStr by remember {
+        mutableStateOf(
+            mealToEdit?.let {
+                if (it.fatGrams % 1f == 0f) it.fatGrams.toInt().toString() else it.fatGrams.toString()
+            } ?: ""
+        )
+    }
+    var carbStr by remember {
+        mutableStateOf(
+            mealToEdit?.let {
+                if (it.carbGrams % 1f == 0f) it.carbGrams.toInt().toString() else it.carbGrams.toString()
+            } ?: ""
+        )
+    }
+    var proteinStr by remember {
+        mutableStateOf(
+            mealToEdit?.let {
+                if (it.proteinGrams % 1f == 0f) it.proteinGrams.toInt().toString() else it.proteinGrams.toString()
+            } ?: ""
+        )
+    }
+    var sugarStr by remember {
+        mutableStateOf(
+            mealToEdit?.let {
+                if (it.sugarGrams % 1f == 0f) it.sugarGrams.toInt().toString() else it.sugarGrams.toString()
+            } ?: ""
+        )
+    }
+    var kcalStr by remember { mutableStateOf(mealToEdit?.kcal?.toString() ?: "") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DarkSurface,
         title = {
-            Text("Add Meal", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (isEditing) "Edit Meal" else "Add Meal",
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold
+            )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -968,12 +1022,12 @@ fun AddMealDialog(
                         val protein = proteinStr.toFloatOrNull() ?: 0f
                         val sugar = sugarStr.toFloatOrNull() ?: 0f
                         val kcal = kcalStr.toIntOrNull() ?: 0
-                        onAddMeal(mealName, fat, carb, protein, sugar, kcal)
+                        onSaveMeal(mealName, fat, carb, protein, sugar, kcal)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
             ) {
-                Text("Save Meal", fontWeight = FontWeight.Bold)
+                Text(if (isEditing) "Save Changes" else "Save Meal", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -982,6 +1036,14 @@ fun AddMealDialog(
             }
         }
     )
+}
+
+@Composable
+fun AddMealDialog(
+    onDismiss: () -> Unit,
+    onAddMeal: (name: String, fat: Float, carb: Float, protein: Float, sugar: Float, kcal: Int) -> Unit
+) {
+    AddOrEditMealDialog(mealToEdit = null, onDismiss = onDismiss, onSaveMeal = onAddMeal)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

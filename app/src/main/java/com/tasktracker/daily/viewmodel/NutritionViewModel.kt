@@ -236,6 +236,29 @@ class NutritionViewModel(private val nutritionDao: NutritionDao) : ViewModel() {
         }
     }
 
+    fun updateMealDetails(
+        mealLog: MealLog,
+        mealName: String,
+        fatGrams: Float,
+        carbGrams: Float,
+        proteinGrams: Float,
+        sugarGrams: Float,
+        kcal: Int
+    ) {
+        if (mealName.isBlank()) return
+        viewModelScope.launch {
+            val updatedMeal = mealLog.copy(
+                mealName = mealName.trim(),
+                fatGrams = fatGrams.coerceAtLeast(0f),
+                carbGrams = carbGrams.coerceAtLeast(0f),
+                proteinGrams = proteinGrams.coerceAtLeast(0f),
+                sugarGrams = sugarGrams.coerceAtLeast(0f),
+                kcal = kcal.coerceAtLeast(0)
+            )
+            nutritionDao.updateMeal(updatedMeal)
+        }
+    }
+
     fun deleteMeal(mealLog: MealLog) {
         viewModelScope.launch {
             nutritionDao.deleteMeal(mealLog)

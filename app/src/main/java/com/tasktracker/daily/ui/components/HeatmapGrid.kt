@@ -33,16 +33,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.HeatmapLevel0
 import com.tasktracker.daily.ui.theme.HeatmapLevel1
 import com.tasktracker.daily.ui.theme.HeatmapLevel2
 import com.tasktracker.daily.ui.theme.HeatmapLevel3
 import com.tasktracker.daily.ui.theme.HeatmapLevel4
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
+import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.DayStat
 import java.time.format.DateTimeFormatter
 
@@ -52,11 +47,12 @@ fun HeatmapGrid(
     modifier: Modifier = Modifier
 ) {
     var selectedStat by remember { mutableStateOf<DayStat?>(null) }
+    val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -72,12 +68,12 @@ fun HeatmapGrid(
                 Text(
                     text = "3-Month Activity Heatmap",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Scrollable (90 Days)",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextMuted
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
 
@@ -94,7 +90,7 @@ fun HeatmapGrid(
                 userScrollEnabled = true
             ) {
                 items(stats) { stat ->
-                    val squareColor = getHeatmapColor(stat.level)
+                    val squareColor = getHeatmapColor(stat.level, level0Color)
                     val isSelected = selectedStat?.epochDay == stat.epochDay
 
                     Box(
@@ -105,7 +101,7 @@ fun HeatmapGrid(
                             .background(squareColor)
                             .border(
                                 width = if (isSelected) 2.dp else 0.5.dp,
-                                color = if (isSelected) TextPrimary else DarkBorder,
+                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
                                 shape = RoundedCornerShape(6.dp)
                             )
                             .clickable { selectedStat = stat }
@@ -113,7 +109,7 @@ fun HeatmapGrid(
                         Text(
                             text = stat.date.dayOfMonth.toString(),
                             fontSize = 10.sp,
-                            color = if (stat.level >= 3) DarkSurface else TextSecondary
+                            color = if (stat.level >= 3) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -133,18 +129,18 @@ fun HeatmapGrid(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(DarkBorder.copy(alpha = 0.5f))
+                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = activeStat.date.format(dateFormatter),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "${activeStat.completedTasks}/${activeStat.totalTasks} Done ($pctStr%)",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = getHeatmapColor(activeStat.level).takeIf { activeStat.level > 0 } ?: TextSecondary
+                        color = getHeatmapColor(activeStat.level, level0Color).takeIf { activeStat.level > 0 } ?: MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -157,7 +153,7 @@ fun HeatmapGrid(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Less", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                Text("Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
                 Spacer(modifier = Modifier.width(6.dp))
 
                 listOf(0, 1, 2, 3, 4).forEach { level ->
@@ -165,24 +161,24 @@ fun HeatmapGrid(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(getHeatmapColor(level))
+                            .background(getHeatmapColor(level, level0Color))
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }
 
                 Spacer(modifier = Modifier.width(3.dp))
-                Text("More", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                Text("More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
             }
         }
     }
 }
 
-fun getHeatmapColor(level: Int): Color {
+fun getHeatmapColor(level: Int, level0Color: Color): Color {
     return when (level) {
         1 -> HeatmapLevel1
         2 -> HeatmapLevel2
         3 -> HeatmapLevel3
         4 -> HeatmapLevel4
-        else -> HeatmapLevel0
+        else -> level0Color
     }
 }

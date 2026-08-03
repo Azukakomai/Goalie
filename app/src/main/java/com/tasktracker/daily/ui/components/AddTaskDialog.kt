@@ -44,13 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.data.RecurrenceType
 import com.tasktracker.daily.data.Task
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -102,12 +95,12 @@ fun AddOrEditTaskDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(16.dp),
-        containerColor = DarkSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = if (isEditing) "Edit Task / Goal" else "New Goal / Task",
                 style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -116,21 +109,21 @@ fun AddOrEditTaskDialog(
                 Text(
                     text = if (isEditing) "Modify your task details" else "What do you want to accomplish?",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = taskTitle,
                     onValueChange = { taskTitle = it },
-                    placeholder = { Text("e.g. Read 20 pages, Morning Run...", color = TextMuted) },
+                    placeholder = { Text("e.g. Read 20 pages, Morning Run...", color = MaterialTheme.colorScheme.tertiary) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = DarkSurface,
-                        unfocusedContainerColor = DarkSurface,
-                        focusedBorderColor = PrimaryEmerald,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -146,13 +139,13 @@ fun AddOrEditTaskDialog(
                     Text(
                         text = "Start Date",
                         style = MaterialTheme.typography.labelLarge,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = formattedSelectedDate,
                         style = MaterialTheme.typography.bodySmall,
-                        color = PrimaryEmerald,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -173,8 +166,8 @@ fun AddOrEditTaskDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isToday) PrimaryEmerald else DarkBackground)
-                            .border(1.dp, if (isToday) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                            .background(if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
+                            .border(1.dp, if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -182,7 +175,7 @@ fun AddOrEditTaskDialog(
                         Text(
                             text = "Today",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isToday) DarkBackground else TextPrimary,
+                            color = if (isToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium
                         )
                     }
@@ -192,8 +185,8 @@ fun AddOrEditTaskDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isTomorrow) PrimaryEmerald else DarkBackground)
-                            .border(1.dp, if (isTomorrow) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                            .background(if (isTomorrow) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
+                            .border(1.dp, if (isTomorrow) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today.plusDays(1) }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -201,7 +194,7 @@ fun AddOrEditTaskDialog(
                         Text(
                             text = "Tomorrow",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isTomorrow) DarkBackground else TextPrimary,
+                            color = if (isTomorrow) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                             fontWeight = if (isTomorrow) FontWeight.Bold else FontWeight.Medium
                         )
                     }
@@ -211,8 +204,8 @@ fun AddOrEditTaskDialog(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isIn2Days) PrimaryEmerald else DarkBackground)
-                            .border(1.dp, if (isIn2Days) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                            .background(if (isIn2Days) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
+                            .border(1.dp, if (isIn2Days) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                             .clickable { selectedDate = today.plusDays(2) }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -220,7 +213,7 @@ fun AddOrEditTaskDialog(
                         Text(
                             text = "+2 Days",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isIn2Days) DarkBackground else TextPrimary,
+                            color = if (isIn2Days) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                             fontWeight = if (isIn2Days) FontWeight.Bold else FontWeight.Medium
                         )
                     }
@@ -233,8 +226,8 @@ fun AddOrEditTaskDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(if (isCustom) PrimaryEmerald.copy(alpha = 0.15f) else DarkBackground)
-                        .border(1.dp, if (isCustom) PrimaryEmerald else DarkBorder, RoundedCornerShape(8.dp))
+                        .background(if (isCustom) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.background)
+                        .border(1.dp, if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                         .clickable { openDatePicker() }
                         .padding(horizontal = 12.dp, vertical = 10.dp)
                 ) {
@@ -247,14 +240,14 @@ fun AddOrEditTaskDialog(
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
                                 contentDescription = "Pick Custom Date",
-                                tint = if (isCustom) PrimaryEmerald else TextMuted,
+                                tint = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (isCustom) "Custom Date: ${selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy"))}" else "Pick Specific Date...",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = if (isCustom) PrimaryEmerald else TextSecondary,
+                                color = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = if (isCustom) FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -270,7 +263,7 @@ fun AddOrEditTaskDialog(
                 Text(
                     text = "Recurrence",
                     style = MaterialTheme.typography.labelLarge,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -284,10 +277,10 @@ fun AddOrEditTaskDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) PrimaryEmerald else DarkBackground)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
                                 .border(
                                     width = 1.dp,
-                                    color = if (isSelected) PrimaryEmerald else DarkBorder,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .clickable { selectedRecurrence = type }
@@ -296,7 +289,7 @@ fun AddOrEditTaskDialog(
                             Text(
                                 text = type.label,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = if (isSelected) DarkBackground else TextPrimary
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -311,7 +304,7 @@ fun AddOrEditTaskDialog(
                         Text(
                             text = "Repeat every",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(end = 8.dp)
                         )
                         OutlinedTextField(
@@ -324,19 +317,19 @@ fun AddOrEditTaskDialog(
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = DarkSurface,
-                                unfocusedContainerColor = DarkSurface,
-                                focusedBorderColor = PrimaryEmerald,
-                                unfocusedBorderColor = DarkBorder,
-                                focusedTextColor = TextPrimary,
-                                unfocusedTextColor = TextPrimary
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "days",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -352,8 +345,8 @@ fun AddOrEditTaskDialog(
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryEmerald,
-                    contentColor = DarkBackground
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -362,7 +355,7 @@ fun AddOrEditTaskDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

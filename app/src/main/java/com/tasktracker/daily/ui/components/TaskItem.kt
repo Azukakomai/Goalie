@@ -31,12 +31,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.data.RecurrenceType
 import com.tasktracker.daily.data.Task
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.filled.CalendarToday
@@ -53,8 +47,9 @@ fun TaskItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val surface = MaterialTheme.colorScheme.surface
     val backgroundColor by animateColorAsState(
-        targetValue = if (task.isCompleted) DarkSurface.copy(alpha = 0.6f) else DarkSurface,
+        targetValue = if (task.isCompleted) surface.copy(alpha = 0.6f) else surface,
         label = "taskBgColor"
     )
 
@@ -63,7 +58,7 @@ fun TaskItem(
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
@@ -78,9 +73,9 @@ fun TaskItem(
                 checked = task.isCompleted,
                 onCheckedChange = { onToggle() },
                 colors = CheckboxDefaults.colors(
-                    checkedColor = PrimaryEmerald,
-                    uncheckedColor = TextMuted,
-                    checkmarkColor = DarkSurface
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.tertiary,
+                    checkmarkColor = MaterialTheme.colorScheme.surface
                 )
             )
 
@@ -92,7 +87,7 @@ fun TaskItem(
                     style = MaterialTheme.typography.bodyLarge.copy(
                         textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                     ),
-                    color = if (task.isCompleted) TextMuted else TextPrimary
+                    color = if (task.isCompleted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
                 )
 
                 val startDate = remember(task.startDateEpochDay) { LocalDate.ofEpochDay(task.startDateEpochDay) }
@@ -109,21 +104,21 @@ fun TaskItem(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(DarkBackground)
+                                    .background(MaterialTheme.colorScheme.background)
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.CalendarToday,
                                         contentDescription = "Start Date",
-                                        tint = PrimaryEmerald,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.height(12.dp).width(12.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = "Starts ${startDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = PrimaryEmerald
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -133,14 +128,14 @@ fun TaskItem(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(DarkBackground)
+                                    .background(MaterialTheme.colorScheme.background)
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.Repeat,
                                         contentDescription = "Recurring",
-                                        tint = PrimaryEmerald,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.height(12.dp).width(12.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -152,7 +147,7 @@ fun TaskItem(
                                     Text(
                                         text = labelText,
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = PrimaryEmerald
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -165,7 +160,7 @@ fun TaskItem(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit Task",
-                    tint = TextMuted
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
             }
 
@@ -173,7 +168,7 @@ fun TaskItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Task",
-                    tint = TextMuted
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -23,12 +24,6 @@ import androidx.compose.material.icons.filled.Restaurant
 import com.tasktracker.daily.ui.screens.DashboardScreen
 import com.tasktracker.daily.ui.screens.NutritionScreen
 import com.tasktracker.daily.ui.screens.TasksScreen
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.TaskViewModel
 
@@ -49,8 +44,8 @@ fun AppNavigation(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = DarkSurface,
-                contentColor = TextPrimary,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
                 tonalElevation = androidx.compose.ui.unit.Dp(0f)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -62,11 +57,11 @@ fun AppNavigation(
                         label = { Text(screen.title) },
                         selected = currentRoute == screen.route,
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = DarkBackground,
-                            selectedTextColor = PrimaryEmerald,
-                            indicatorColor = PrimaryEmerald,
-                            unselectedIconColor = TextMuted,
-                            unselectedTextColor = TextMuted
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.tertiary,
+                            unselectedTextColor = MaterialTheme.colorScheme.tertiary
                         ),
                         onClick = {
                             if (currentRoute != screen.route) {

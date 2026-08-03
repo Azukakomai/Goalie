@@ -36,14 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.data.Task
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.DarkSurfaceVariant
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -88,8 +80,8 @@ fun WeeklyTaskCalendar(
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -107,13 +99,13 @@ fun WeeklyTaskCalendar(
                     Text(
                         text = "Weekly Schedule",
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = weekRangeTitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -129,7 +121,7 @@ fun WeeklyTaskCalendar(
                             Icon(
                                 imageVector = Icons.Default.Today,
                                 contentDescription = "Go to Today",
-                                tint = PrimaryEmerald,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -141,7 +133,7 @@ fun WeeklyTaskCalendar(
                         Icon(
                             imageVector = Icons.Default.ChevronLeft,
                             contentDescription = "Previous Week",
-                            tint = TextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     IconButton(
@@ -151,7 +143,7 @@ fun WeeklyTaskCalendar(
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = "Next Week",
-                            tint = TextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -177,17 +169,17 @@ fun WeeklyTaskCalendar(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 when {
-                                    isSelected -> PrimaryEmerald
-                                    isToday -> DarkSurfaceVariant
-                                    else -> DarkBackground
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    isToday -> MaterialTheme.colorScheme.surfaceVariant
+                                    else -> MaterialTheme.colorScheme.background
                                 }
                             )
                             .border(
                                 width = 1.dp,
                                 color = when {
-                                    isSelected -> PrimaryEmerald
-                                    isToday -> PrimaryEmerald.copy(alpha = 0.5f)
-                                    else -> DarkBorder
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                    else -> MaterialTheme.colorScheme.outline
                                 },
                                 shape = RoundedCornerShape(12.dp)
                             )
@@ -200,7 +192,7 @@ fun WeeklyTaskCalendar(
                             text = date.format(DateTimeFormatter.ofPattern("EEE")).uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) DarkBackground else TextMuted
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.tertiary
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -210,7 +202,7 @@ fun WeeklyTaskCalendar(
                             text = "${date.dayOfMonth}",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) DarkBackground else TextPrimary
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(6.dp))
@@ -218,9 +210,9 @@ fun WeeklyTaskCalendar(
                         // Task indicator dot/count badge
                         if (totalTasksCount > 0) {
                             val dotColor = when {
-                                isSelected -> DarkBackground
-                                completedTasksCount == totalTasksCount -> PrimaryEmerald
-                                else -> PrimaryEmerald.copy(alpha = 0.7f)
+                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                completedTasksCount == totalTasksCount -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                             }
                             Box(
                                 modifier = Modifier
@@ -247,13 +239,13 @@ fun WeeklyTaskCalendar(
                 Text(
                     text = "Stacked Tasks ($selectedDateStr)",
                     style = MaterialTheme.typography.titleSmall,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "${selectedDayTasks.count { it.isCompleted }}/${selectedDayTasks.size} done",
                     style = MaterialTheme.typography.labelSmall,
-                    color = PrimaryEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -265,14 +257,14 @@ fun WeeklyTaskCalendar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(DarkBackground)
+                        .background(MaterialTheme.colorScheme.background)
                         .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "No tasks scheduled for ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             } else {

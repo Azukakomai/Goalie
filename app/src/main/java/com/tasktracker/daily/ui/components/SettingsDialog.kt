@@ -1,13 +1,9 @@
 package com.tasktracker.daily.ui.components
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -38,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,15 +41,6 @@ import com.tasktracker.daily.data.BackupManager
 import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.Task
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.DarkSurfaceVariant
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
-import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsDialog(
@@ -114,17 +96,17 @@ fun SettingsDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Settings, contentDescription = null, tint = PrimaryEmerald)
+                Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(
                     text = "Goalie Settings",
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -137,7 +119,7 @@ fun SettingsDialog(
                 Text(
                     text = "Manage your data, export backups, or restore previous entries.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -145,7 +127,10 @@ fun SettingsDialog(
                 // Export Data Button
                 Button(
                     onClick = { exportLauncher.launch("goalie_backup.json") },
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceVariant, contentColor = TextPrimary),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -156,11 +141,11 @@ fun SettingsDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        Icon(Icons.Default.FileUpload, contentDescription = null, tint = PrimaryEmerald)
+                        Icon(Icons.Default.FileUpload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Export Data", fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Save tasks, meals & goals to JSON file", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                            Text("Export Data", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Save tasks, meals & goals to JSON file", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
                         }
                     }
                 }
@@ -168,7 +153,10 @@ fun SettingsDialog(
                 // Import Data Button
                 Button(
                     onClick = { importLauncher.launch(arrayOf("application/json", "*/*")) },
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceVariant, contentColor = TextPrimary),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -182,8 +170,8 @@ fun SettingsDialog(
                         Icon(Icons.Default.FileDownload, contentDescription = null, tint = Color(0xFF4D96FF))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Import Data", fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Restore data from a JSON backup file", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                            Text("Import Data", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Restore data from a JSON backup file", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
                         }
                     }
                 }
@@ -218,7 +206,10 @@ fun SettingsDialog(
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Close", fontWeight = FontWeight.Bold)
             }
@@ -229,7 +220,7 @@ fun SettingsDialog(
     if (showResetConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showResetConfirmDialog = false },
-            containerColor = DarkSurface,
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text("Reset All Data?", style = MaterialTheme.typography.titleLarge, color = Color(0xFFFF6B6B), fontWeight = FontWeight.Bold)
             },
@@ -237,7 +228,7 @@ fun SettingsDialog(
                 Text(
                     text = "Are you sure you want to delete all tasks, recurring items, meal logs, and daily nutrition goals? This action cannot be undone.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             confirmButton = {
@@ -248,14 +239,14 @@ fun SettingsDialog(
                         onDismiss()
                         Toast.makeText(context, "All app data has been reset.", Toast.LENGTH_LONG).show()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B), contentColor = DarkBackground)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B), contentColor = Color.White)
                 ) {
                     Text("Yes, Reset Data", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmDialog = false }) {
-                    Text("Cancel", color = TextSecondary)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )

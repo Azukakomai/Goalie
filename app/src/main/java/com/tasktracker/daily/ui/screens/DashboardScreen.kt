@@ -34,12 +34,6 @@ import com.tasktracker.daily.ui.components.HeatmapGrid
 import com.tasktracker.daily.ui.components.SettingsDialog
 import com.tasktracker.daily.ui.components.WeeklyChart
 import com.tasktracker.daily.ui.components.WeeklyTaskCalendar
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.TaskViewModel
 
@@ -61,7 +55,7 @@ fun DashboardScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
@@ -75,26 +69,26 @@ fun DashboardScreen(
                 Text(
                     text = "Analytics Dashboard",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Track your productivity & daily consistency",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(
                 onClick = { showSettingsDialog = true },
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(DarkSurface)
-                    .border(1.dp, DarkBorder, CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = PrimaryEmerald
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }

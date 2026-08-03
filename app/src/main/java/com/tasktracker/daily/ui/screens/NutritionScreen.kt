@@ -1,6 +1,5 @@
 package com.tasktracker.daily.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,7 +40,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -49,11 +47,9 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -75,14 +71,7 @@ import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.NutritionMetric
 import com.tasktracker.daily.ui.components.getHeatmapColor
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.DarkSurfaceVariant
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
+import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.NutritionDayStat
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import java.time.LocalDate
@@ -100,10 +89,10 @@ fun NutritionScreen(
     val heatmapStats by viewModel.heatmap90Days.collectAsState()
 
     var showAddMealDialog by remember { mutableStateOf(false) }
-    var showAddGoalDialog by remember { mutableStateOf(false) }
-    var showManageGoals by remember { mutableStateOf(false) }
-    var goalToEdit by remember { mutableStateOf<NutritionGoal?>(null) }
     var mealToEdit by remember { mutableStateOf<MealLog?>(null) }
+    var showAddGoalDialog by remember { mutableStateOf(false) }
+    var goalToEdit by remember { mutableStateOf<NutritionGoal?>(null) }
+    var showManageGoals by remember { mutableStateOf(false) }
 
     val today = LocalDate.now()
     val isToday = selectedDate == today
@@ -112,7 +101,7 @@ fun NutritionScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -132,26 +121,26 @@ fun NutritionScreen(
                         Text(
                             text = "Nutritional Tracker",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = TextPrimary,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = "Track meals, calories & daily goals",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     IconButton(
                         onClick = { showManageGoals = true },
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(DarkSurface)
-                            .border(1.dp, DarkBorder, CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Flag,
                             contentDescription = "Manage Goals",
-                            tint = PrimaryEmerald
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -161,8 +150,8 @@ fun NutritionScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                    border = BorderStroke(1.dp, DarkBorder),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -173,21 +162,21 @@ fun NutritionScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { viewModel.selectDate(selectedDate.minusDays(1)) }) {
-                            Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Day", tint = TextPrimary)
+                            Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Day", tint = MaterialTheme.colorScheme.onSurface)
                         }
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = if (isToday) "Today" else selectedDate.format(dateFormatter),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
                             )
                             if (isToday) {
                                 Text(
                                     text = selectedDate.format(dateFormatter),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = TextMuted
+                                    color = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         }
@@ -195,11 +184,11 @@ fun NutritionScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (!isToday) {
                                 IconButton(onClick = { viewModel.selectDate(today) }) {
-                                    Icon(Icons.Default.Today, contentDescription = "Go to Today", tint = PrimaryEmerald)
+                                    Icon(Icons.Default.Today, contentDescription = "Go to Today", tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                             IconButton(onClick = { viewModel.selectDate(selectedDate.plusDays(1)) }) {
-                                Icon(Icons.Default.ChevronRight, contentDescription = "Next Day", tint = TextPrimary)
+                                Icon(Icons.Default.ChevronRight, contentDescription = "Next Day", tint = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -224,8 +213,8 @@ fun NutritionScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                    border = BorderStroke(1.dp, DarkBorder),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -241,13 +230,13 @@ fun NutritionScreen(
                             Text(
                                 text = "Daily Goal Conditions",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
                             )
                             TextButton(onClick = { showAddGoalDialog = true }) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = PrimaryEmerald, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Add Goal", color = PrimaryEmerald)
+                                Text("Add Goal", color = MaterialTheme.colorScheme.primary)
                             }
                         }
 
@@ -257,7 +246,7 @@ fun NutritionScreen(
                             Text(
                                 text = "No goal conditions set. Tap 'Add Goal' to create one (e.g. Protein > 130g).",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextMuted
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -292,13 +281,13 @@ fun NutritionScreen(
                     Text(
                         text = "Logged Meals",
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = "${meals.size} ${if (meals.size == 1) "meal" else "meals"}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }
@@ -307,8 +296,8 @@ fun NutritionScreen(
                 item {
                     Card(
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                        border = BorderStroke(1.dp, DarkBorder),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
@@ -322,20 +311,20 @@ fun NutritionScreen(
                             Icon(
                                 imageVector = Icons.Default.Restaurant,
                                 contentDescription = null,
-                                tint = TextMuted,
+                                tint = MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.size(40.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "No meals logged for this day yet.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Tap the + button to add a meal.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextMuted
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         }
                     }
@@ -358,8 +347,8 @@ fun NutritionScreen(
         // Floating Action Button to Add Meal
         FloatingActionButton(
             onClick = { showAddMealDialog = true },
-            containerColor = PrimaryEmerald,
-            contentColor = DarkBackground,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -435,8 +424,8 @@ fun MacroSummaryCard(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -447,7 +436,7 @@ fun MacroSummaryCard(
             Text(
                 text = "Daily Intake Summary",
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
 
@@ -463,20 +452,20 @@ fun MacroSummaryCard(
                     Text(
                         text = "Total Calories",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextMuted
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
                             text = "${summary.totalKcal}",
                             style = MaterialTheme.typography.headlineLarge,
-                            color = PrimaryEmerald,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "kcal",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
@@ -529,8 +518,8 @@ fun MacroPill(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(DarkSurfaceVariant)
-            .border(1.dp, DarkBorder, RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
             .padding(vertical = 10.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -538,7 +527,7 @@ fun MacroPill(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextMuted,
+                color = MaterialTheme.colorScheme.tertiary,
                 fontSize = 11.sp
             )
             Spacer(modifier = Modifier.height(2.dp))
@@ -560,10 +549,12 @@ fun NutritionHeatmapCard(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
+
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -580,19 +571,19 @@ fun NutritionHeatmapCard(
                     Text(
                         text = "3-Month Goal Accomplishment",
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = "Cell shows kcal • Greener = more goals met",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextMuted
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
                 Text(
                     text = "Scrollable (90 Days)",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextMuted
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
 
@@ -610,7 +601,7 @@ fun NutritionHeatmapCard(
             ) {
                 items(stats) { stat ->
                     val isSelected = stat.date == selectedDate
-                    val squareColor = getHeatmapColor(stat.level)
+                    val squareColor = getHeatmapColor(stat.level, level0Color)
 
                     Box(
                         contentAlignment = Alignment.Center,
@@ -620,7 +611,7 @@ fun NutritionHeatmapCard(
                             .background(squareColor)
                             .border(
                                 width = if (isSelected) 2.dp else 0.5.dp,
-                                color = if (isSelected) TextPrimary else DarkBorder,
+                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable { onDateSelected(stat.date) }
@@ -633,13 +624,13 @@ fun NutritionHeatmapCard(
                                 text = "${stat.date.dayOfMonth}",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (stat.level >= 3) DarkBackground else TextPrimary
+                                color = if (stat.level >= 3) Color.White else MaterialTheme.colorScheme.onSurface
                             )
                             if (stat.totalKcal > 0) {
                                 Text(
                                     text = "${stat.totalKcal}",
                                     fontSize = 8.sp,
-                                    color = if (stat.level >= 3) DarkBackground.copy(alpha = 0.8f) else TextSecondary
+                                    color = if (stat.level >= 3) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -665,19 +656,19 @@ fun NutritionHeatmapCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(DarkBorder.copy(alpha = 0.5f))
+                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = "${activeStat.date.format(dateFormatter)}: ${activeStat.totalKcal} kcal",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = goalsStr,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (activeStat.goalsAccomplished > 0) PrimaryEmerald else TextSecondary,
+                        color = if (activeStat.goalsAccomplished > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -691,7 +682,7 @@ fun NutritionHeatmapCard(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("0 Goals", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                Text("0 Goals", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
                 Spacer(modifier = Modifier.width(6.dp))
 
                 listOf(0, 1, 2, 3, 4).forEach { level ->
@@ -699,13 +690,13 @@ fun NutritionHeatmapCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(getHeatmapColor(level))
+                            .background(getHeatmapColor(level, level0Color))
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }
 
                 Spacer(modifier = Modifier.width(3.dp))
-                Text("All Goals Met", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                Text("All Goals Met", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
             }
         }
     }
@@ -732,8 +723,8 @@ fun GoalConditionBadge(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(if (isMet) PrimaryEmerald.copy(alpha = 0.12f) else DarkSurfaceVariant)
-            .border(1.dp, if (isMet) PrimaryEmerald.copy(alpha = 0.4f) else DarkBorder, RoundedCornerShape(10.dp))
+            .background(if (isMet) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, if (isMet) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -743,13 +734,13 @@ fun GoalConditionBadge(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .background(if (isMet) PrimaryEmerald else TextMuted.copy(alpha = 0.3f)),
+                    .background(if (isMet) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = if (isMet) Icons.Default.Check else Icons.Default.Close,
                     contentDescription = null,
-                    tint = if (isMet) DarkBackground else TextSecondary,
+                    tint = if (isMet) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -757,7 +748,7 @@ fun GoalConditionBadge(
             Text(
                 text = goal.getDisplayText(),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -766,7 +757,7 @@ fun GoalConditionBadge(
             Text(
                 text = "${formatVal(currentVal)}${goal.nutritionMetric.unit}",
                 style = MaterialTheme.typography.bodySmall,
-                color = if (isMet) PrimaryEmerald else TextSecondary,
+                color = if (isMet) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -774,7 +765,7 @@ fun GoalConditionBadge(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit Goal",
-                    tint = TextMuted,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -790,8 +781,8 @@ fun MealItemCard(
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -805,7 +796,7 @@ fun MealItemCard(
                 Text(
                     text = meal.mealName,
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -826,7 +817,7 @@ fun MealItemCard(
                 Text(
                     text = "${meal.kcal} kcal",
                     style = MaterialTheme.typography.titleSmall,
-                    color = PrimaryEmerald,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -834,7 +825,7 @@ fun MealItemCard(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit Meal",
-                        tint = TextMuted,
+                        tint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -842,7 +833,7 @@ fun MealItemCard(
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete Meal",
-                        tint = TextMuted,
+                        tint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -908,12 +899,12 @@ fun AddOrEditMealDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = if (isEditing) "Edit Meal" else "Add Meal",
                 style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -925,12 +916,12 @@ fun AddOrEditMealDialog(
                     label = { Text("Meal Name (e.g., Chicken & Rice)") },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryEmerald,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedLabelColor = PrimaryEmerald,
-                        unfocusedLabelColor = TextMuted,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.tertiary,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -943,10 +934,10 @@ fun AddOrEditMealDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -957,10 +948,10 @@ fun AddOrEditMealDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -974,10 +965,10 @@ fun AddOrEditMealDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -988,10 +979,10 @@ fun AddOrEditMealDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -1004,10 +995,10 @@ fun AddOrEditMealDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryEmerald,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1025,14 +1016,14 @@ fun AddOrEditMealDialog(
                         onSaveMeal(mealName, fat, carb, protein, sugar, kcal)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
             ) {
                 Text(if (isEditing) "Save Changes" else "Save Meal", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
@@ -1069,12 +1060,12 @@ fun AddOrEditGoalDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = if (isEditing) "Edit Goal Condition" else "Add Goal Condition",
                 style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -1083,7 +1074,7 @@ fun AddOrEditGoalDialog(
                 Text(
                     text = "Condition example: Protein > 130g or Fat < 15g",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextMuted
+                    color = MaterialTheme.colorScheme.tertiary
                 )
 
                 // 1. Nutritional Metric Exposed Dropdown Box
@@ -1098,10 +1089,10 @@ fun AddOrEditGoalDialog(
                         label = { Text("Nutritional Metric") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = metricExpanded) },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1110,11 +1101,11 @@ fun AddOrEditGoalDialog(
                     ExposedDropdownMenu(
                         expanded = metricExpanded,
                         onDismissRequest = { metricExpanded = false },
-                        modifier = Modifier.background(DarkSurface)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         NutritionMetric.values().forEach { metric ->
                             DropdownMenuItem(
-                                text = { Text("${metric.displayName} (${metric.unit})", color = TextPrimary) },
+                                text = { Text("${metric.displayName} (${metric.unit})", color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     selectedMetric = metric
                                     metricExpanded = false
@@ -1136,10 +1127,10 @@ fun AddOrEditGoalDialog(
                         label = { Text("Operator Condition") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = operatorExpanded) },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = PrimaryEmerald,
-                            unfocusedBorderColor = DarkBorder,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1148,11 +1139,11 @@ fun AddOrEditGoalDialog(
                     ExposedDropdownMenu(
                         expanded = operatorExpanded,
                         onDismissRequest = { operatorExpanded = false },
-                        modifier = Modifier.background(DarkSurface)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         GoalOperator.values().forEach { op ->
                             DropdownMenuItem(
-                                text = { Text("${op.symbol} (${op.description})", color = TextPrimary) },
+                                text = { Text("${op.symbol} (${op.description})", color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     selectedOperator = op
                                     operatorExpanded = false
@@ -1170,10 +1161,10 @@ fun AddOrEditGoalDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryEmerald,
-                        unfocusedBorderColor = DarkBorder,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1187,14 +1178,14 @@ fun AddOrEditGoalDialog(
                         onSaveGoal(selectedMetric, selectedOperator, valFloat)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
             ) {
                 Text(if (isEditing) "Save Changes" else "Add Goal", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
@@ -1211,22 +1202,22 @@ fun ManageGoalsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Manage Daily Goals", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text("Manage Daily Goals", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                 IconButton(onClick = onAddGoalClick) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = PrimaryEmerald)
+                    Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = MaterialTheme.colorScheme.primary)
                 }
             }
         },
         text = {
             if (goals.isEmpty()) {
-                Text("No goals configured yet.", color = TextMuted)
+                Text("No goals configured yet.", color = MaterialTheme.colorScheme.tertiary)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     goals.forEach { goal ->
@@ -1234,7 +1225,7 @@ fun ManageGoalsDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(DarkSurfaceVariant)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -1242,17 +1233,17 @@ fun ManageGoalsDialog(
                             Text(
                                 text = goal.getDisplayText(),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = if (goal.isEnabled) TextPrimary else TextMuted
+                                color = if (goal.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.tertiary
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 TextButton(onClick = { onToggle(goal) }) {
-                                    Text(if (goal.isEnabled) "Enabled" else "Disabled", color = if (goal.isEnabled) PrimaryEmerald else TextMuted)
+                                    Text(if (goal.isEnabled) "Enabled" else "Disabled", color = if (goal.isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
                                 }
                                 IconButton(onClick = { onEdit(goal) }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = PrimaryEmerald, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                 }
                                 IconButton(onClick = { onDelete(goal) }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = TextMuted, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp))
                                 }
                             }
                         }
@@ -1263,7 +1254,7 @@ fun ManageGoalsDialog(
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryEmerald, contentColor = DarkBackground)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
             ) {
                 Text("Done", fontWeight = FontWeight.Bold)
             }

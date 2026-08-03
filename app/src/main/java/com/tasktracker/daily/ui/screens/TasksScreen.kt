@@ -37,13 +37,6 @@ import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.data.Task
 import com.tasktracker.daily.ui.components.AddOrEditTaskDialog
 import com.tasktracker.daily.ui.components.TaskItem
-import com.tasktracker.daily.ui.theme.DarkBackground
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
 import com.tasktracker.daily.viewmodel.TaskViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -65,7 +58,7 @@ fun TasksScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -83,12 +76,12 @@ fun TasksScreen(
                     Text(
                         text = "Daily Tasks",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = todayStr,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -97,7 +90,7 @@ fun TasksScreen(
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = "Seed Sample Data",
-                        tint = PrimaryEmerald
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -107,8 +100,8 @@ fun TasksScreen(
             // Progress Card
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -119,13 +112,13 @@ fun TasksScreen(
                         Text(
                             text = "Daily Progress",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "$completedCount of $totalCount done",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = PrimaryEmerald
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -137,8 +130,8 @@ fun TasksScreen(
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp)),
-                        color = PrimaryEmerald,
-                        trackColor = DarkBorder
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outline
                     )
                 }
             }
@@ -157,13 +150,13 @@ fun TasksScreen(
                         Text(
                             text = "No tasks for today yet!",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Tap + to add a task or ✨ for sample data",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextMuted
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }
@@ -187,8 +180,8 @@ fun TasksScreen(
         // Floating Action Button
         FloatingActionButton(
             onClick = { showAddDialog = true },
-            containerColor = PrimaryEmerald,
-            contentColor = DarkBackground,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)

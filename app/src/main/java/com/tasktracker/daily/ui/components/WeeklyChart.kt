@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,13 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.tasktracker.daily.ui.theme.DarkBorder
-import com.tasktracker.daily.ui.theme.DarkSurface
-import com.tasktracker.daily.ui.theme.DarkSurfaceVariant
-import com.tasktracker.daily.ui.theme.PrimaryEmerald
-import com.tasktracker.daily.ui.theme.TextMuted
-import com.tasktracker.daily.ui.theme.TextPrimary
-import com.tasktracker.daily.ui.theme.TextSecondary
 import com.tasktracker.daily.viewmodel.DayStat
 import java.time.format.DateTimeFormatter
 
@@ -70,8 +62,8 @@ fun WeeklyChart(
 
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = DarkSurface),
-            border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -82,7 +74,7 @@ fun WeeklyChart(
                 Text(
                     text = "Past 7 Days Performance",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -104,7 +96,7 @@ fun WeeklyChart(
                         Text(
                             text = stat.date.format(dayFormatter),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.width(36.dp)
                         )
 
@@ -115,14 +107,14 @@ fun WeeklyChart(
                                 .weight(1f)
                                 .height(16.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(DarkSurfaceVariant)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .fillMaxWidth(animatedProgress)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(PrimaryEmerald)
+                                    .background(MaterialTheme.colorScheme.primary)
                             )
                         }
 
@@ -131,7 +123,7 @@ fun WeeklyChart(
                         Text(
                             text = "${stat.completedTasks}/${stat.totalTasks}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (stat.completedTasks > 0) TextPrimary else TextMuted,
+                            color = if (stat.completedTasks > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.width(40.dp)
                         )
                     }
@@ -149,8 +141,8 @@ private fun StatCard(
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier
     ) {
         Column(
@@ -162,13 +154,13 @@ private fun StatCard(
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
-                color = PrimaryEmerald
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

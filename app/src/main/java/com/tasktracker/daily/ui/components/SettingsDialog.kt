@@ -1,9 +1,14 @@
 package com.tasktracker.daily.ui.components
 
+import android.Manifest
+import android.app.TimePickerDialog
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,18 +17,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,10 +50,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.tasktracker.daily.data.BackupManager
 import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.Task
+import com.tasktracker.daily.notifications.NotificationHelper
+import com.tasktracker.daily.notifications.NotificationPreferences
+import com.tasktracker.daily.notifications.NotificationScheduler
 
 @Composable
 fun SettingsDialog(
@@ -53,6 +70,58 @@ fun SettingsDialog(
 ) {
     val context = LocalContext.current
     var showResetConfirmDialog by remember { mutableStateOf(false) }
+
+    // Notification Preferences State
+    val prefs = remember { NotificationPreferences(context) }
+    var isNotificationsEnabled by remember { mutableStateOf(prefs.isNotificationsEnabled) }
+    var reminderHour by remember { mutableStateOf(prefs.reminderHour) }
+    var reminderMinute by remember { mutableStateOf(prefs.reminderMinute) }
+
+    // Launcher for Android 13+ Notification Permission
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            isNotificationsEnabled = true
+            prefs.isNotificationsEnabled = true
+            NotificationScheduler.scheduleDailyReminder(context, reminderHour, reminderMinute)
+            Toast.makeText(
+                context,
+                String.format("Daily reminder set for %02d:%02d", reminderHour, reminderMinute),
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            isNotificationsEnabled = false
+            prefs.isNotificationsEnabled = false
+            Toast.makeText(context, "Notification permission is required for daily reminders.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun requestPermissionAndEnableNotifications() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                isNotificationsEnabled = true
+                prefs.isNotificationsEnabled = true
+                NotificationScheduler.scheduleDailyReminder(context, reminderHour, reminderMinute)
+                Toast.makeText(
+                    context,
+                    String.format("Daily reminder set for %02d:%02d", reminderHour, reminderMinute),
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            isNotificationsEnabled = true
+            prefs.isNotificationsEnabled = true
+            NotificationScheduler.scheduleDailyReminder(context, reminderHour, reminderMinute)
+            Toast.makeText(
+                context,
+                String.format("Daily reminder set for %02d:%02d", reminderHour, reminderMinute),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     // Launcher for exporting JSON file
     val exportLauncher = rememberLauncherForActivityResult(
@@ -113,14 +182,156 @@ fun SettingsDialog(
         },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Manage your data, export backups, or restore previous entries.",
+                    text = "Manage notifications, data backups, or restore previous entries.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                // --- Daily Goal Notifications Section ---
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = "Daily Goal Reminders",
+                                    fontWeight = FontWeight.SemiBold,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "\"Have you checked your goals today?\"",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = isNotificationsEnabled,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    requestPermissionAndEnableNotifications()
+                                } else {
+                                    isNotificationsEnabled = false
+                                    prefs.isNotificationsEnabled = false
+                                    NotificationScheduler.cancelDailyReminder(context)
+                                    Toast.makeText(context, "Daily reminders disabled", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+
+                    if (isNotificationsEnabled) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+
+                        // Time Picker Button
+                        OutlinedButton(
+                            onClick = {
+                                TimePickerDialog(
+                                    context,
+                                    { _, hourOfDay, minute ->
+                                        reminderHour = hourOfDay
+                                        reminderMinute = minute
+                                        prefs.reminderHour = hourOfDay
+                                        prefs.reminderMinute = minute
+                                        NotificationScheduler.scheduleDailyReminder(context, hourOfDay, minute)
+                                        Toast.makeText(
+                                            context,
+                                            String.format("Reminder updated to %02d:%02d", hourOfDay, minute),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    reminderHour,
+                                    reminderMinute,
+                                    false
+                                ).show()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.AccessTime, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                val amPm = if (reminderHour >= 12) "PM" else "AM"
+                                val displayHour = if (reminderHour % 12 == 0) 12 else reminderHour % 12
+                                Text(
+                                    text = String.format("Reminder Time: %d:%02d %s", displayHour, reminderMinute, amPm),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        // Instant Test Notification Button
+                        Button(
+                            onClick = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    NotificationHelper.sendGoalReminderNotification(
+                                        context = context,
+                                        title = "Goalie 🎯",
+                                        message = "Have you checked your goals today?"
+                                    )
+                                    Toast.makeText(context, "Test notification sent!", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.NotificationsActive, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Send Test Notification", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -176,7 +387,7 @@ fun SettingsDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // Reset Current Data Danger Button
                 OutlinedButton(

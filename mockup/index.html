@@ -1,1502 +1,2129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Goalie — UI Redesign Mockup v2</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* ========================================
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Goalie — UI Redesign Mockup v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
    DESIGN TOKENS — 60/30/10 System
    60% = --bg (dark base)
    30% = --surface, text elements
    10% = --accent (emerald, used sparingly)
    ======================================== */
-:root {
-  --bg: #0D1117;
-  --surface: #161B22;
-  --surface-raised: #1C2128;
-  --surface-hover: #21262D;
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface-raised: #1C2128;
+      --surface-hover: #21262D;
 
-  /* Text hierarchy via opacity of white */
-  --text-100: rgba(240, 246, 252, 1);     /* headings */
-  --text-80: rgba(240, 246, 252, 0.8);    /* body */
-  --text-60: rgba(240, 246, 252, 0.6);    /* secondary */
-  --text-40: rgba(240, 246, 252, 0.4);    /* muted/hint */
-  --text-20: rgba(240, 246, 252, 0.2);    /* disabled */
+      /* Text hierarchy via opacity of white */
+      --text-100: rgba(240, 246, 252, 1);
+      /* headings */
+      --text-80: rgba(240, 246, 252, 0.8);
+      /* body */
+      --text-60: rgba(240, 246, 252, 0.6);
+      /* secondary */
+      --text-40: rgba(240, 246, 252, 0.4);
+      /* muted/hint */
+      --text-20: rgba(240, 246, 252, 0.2);
+      /* disabled */
 
-  /* 10% accent — emerald */
-  --accent: #39D353;
-  --accent-muted: #26A641;
-  --accent-5: rgba(57, 211, 83, 0.05);
-  --accent-8: rgba(57, 211, 83, 0.08);
-  --accent-12: rgba(57, 211, 83, 0.12);
-  --accent-20: rgba(57, 211, 83, 0.20);
+      /* 10% accent — emerald */
+      --accent: #39D353;
+      --accent-muted: #26A641;
+      --accent-5: rgba(57, 211, 83, 0.05);
+      --accent-8: rgba(57, 211, 83, 0.08);
+      --accent-12: rgba(57, 211, 83, 0.12);
+      --accent-20: rgba(57, 211, 83, 0.20);
 
-  /* Semantic accents — used ONLY where meaningful */
-  --coral: #FF6B6B;
-  --amber: #FFD93D;
-  --sky: #4D96FF;
-  --mint: #6BCB77;
+      /* Semantic accents — used ONLY where meaningful */
+      --coral: #FF6B6B;
+      --amber: #FFD93D;
+      --sky: #4D96FF;
+      --mint: #6BCB77;
 
-  /* Heatmap levels */
-  --h0: #161B22;
-  --h1: #0E4429;
-  --h2: #006D32;
-  --h3: #26A641;
-  --h4: #39D353;
+      /* Heatmap levels */
+      --h0: #161B22;
+      --h1: #0E4429;
+      --h2: #006D32;
+      --h3: #26A641;
+      --h4: #39D353;
 
-  /* Shapes */
-  --r-sm: 8px;
-  --r-md: 16px;
-  --r-lg: 20px;
-  --r-xl: 24px;
-  --r-pill: 100px;
+      /* Shapes */
+      --r-sm: 8px;
+      --r-md: 16px;
+      --r-lg: 20px;
+      --r-xl: 24px;
+      --r-pill: 100px;
 
-  /* Shadows — tinted to match dark bg, never pure black */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
-  --shadow-accent: 0 4px 20px rgba(57, 211, 83, 0.2);
-}
+      /* Shadows — tinted to match dark bg, never pure black */
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+      --shadow-accent: 0 4px 20px rgba(57, 211, 83, 0.2);
+    }
 
-/* ========================================
+    /* ========================================
    RESET
    ======================================== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-html, body {
-  height: 100%;
-  background: #000;
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
-  color: var(--text-80);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
+    html,
+    body {
+      height: 100%;
+      background: #000;
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      color: var(--text-80);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
 
-/* ========================================
+    /* ========================================
    TYPOGRAPHY — Max 4 sizes, 2 weights
    ======================================== */
-/* Size 1: 28px bold — Screen titles */
-/* Size 2: 16px semibold — Section headers, card titles */
-/* Size 3: 14px regular — Body text, values */
-/* Size 4: 11px medium — Labels, badges, hints */
+    /* Size 1: 28px bold — Screen titles */
+    /* Size 2: 16px semibold — Section headers, card titles */
+    /* Size 3: 14px regular — Body text, values */
+    /* Size 4: 11px medium — Labels, badges, hints */
 
-.t1 { font-size: 28px; font-weight: 700; line-height: 1.25; color: var(--text-100); }
-.t2 { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--text-100); }
-.t3 { font-size: 14px; font-weight: 400; line-height: 1.5; color: var(--text-80); }
-.t4 { font-size: 11px; font-weight: 500; line-height: 1.3; color: var(--text-60); letter-spacing: 0.3px; }
+    .t1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-100);
+      margin-top: 10px;
+      margin-bottom: 10px;
+      margin-left: 2px;
+    }
 
-/* Monospace for numbers */
-.mono { font-variant-numeric: tabular-nums; }
+    .t2 {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text-100);
+    }
 
-/* ========================================
+    .t3 {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text-80);
+    }
+
+    .t4 {
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--text-60);
+      letter-spacing: 0.3px;
+    }
+
+    /* Monospace for numbers */
+    .mono {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
    PHONE FRAME
    ======================================== */
-.phone {
-  position: relative;
-  width: 393px;
-  height: 852px;
-  margin: 20px auto;
-  background: var(--bg);
-  border-radius: 48px;
-  border: 3px solid rgba(255,255,255,0.06);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg), 0 0 80px rgba(0,0,0,0.5);
-}
+    .phone {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      margin: 20px auto;
+      background: var(--bg);
+      border-radius: 48px;
+      border: 3px solid rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), 0 0 80px rgba(0, 0, 0, 0.5);
+    }
 
-.notch {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 126px;
-  height: 36px;
-  background: #000;
-  border-radius: 20px;
-  z-index: 100;
-}
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 36px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
 
-.status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 32px 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-100);
-  position: relative;
-  z-index: 10;
-}
-.status-icons { display: flex; gap: 6px; align-items: center; }
-.status-icons svg { width: 16px; height: 16px; fill: var(--text-100); }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-100);
+      position: relative;
+      z-index: 10;
+    }
 
-/* ========================================
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-100);
+    }
+
+    /* ========================================
    SCREEN CONTENT
    ======================================== */
-.screen-content {
-  height: calc(100% - 44px - 72px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.screen-content::-webkit-scrollbar { display: none; }
+    .screen-content {
+      height: calc(100% - 44px - 72px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
-.screen {
-  display: none;
-  min-height: 100%;
-  padding: 0 24px 24px;
-  animation: fadeUp 0.3s ease;
-}
-.screen.active { display: block; }
+    .screen-content::-webkit-scrollbar {
+      display: none;
+    }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    .screen {
+      display: none;
+      min-height: 100%;
+      padding: 0 24px 24px;
+      animation: fadeUp 0.3s ease;
+    }
 
-/* ========================================
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========================================
    BOTTOM NAV — Minimal, no box borders
    ======================================== */
-.bottom-nav {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 72px;
-  background: var(--surface);
-  border-top: 1px solid rgba(255,255,255,0.04);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0 16px;
-  z-index: 50;
-}
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: var(--surface);
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 16px;
+      z-index: 50;
+    }
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 20px;
-  cursor: pointer;
-  position: relative;
-  border-radius: var(--r-md);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  -webkit-tap-highlight-color: transparent;
-}
-.nav-item:active { transform: scale(0.92); }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 20px;
+      cursor: pointer;
+      position: relative;
+      border-radius: var(--r-md);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.nav-item svg {
-  width: 22px; height: 22px;
-  fill: var(--text-40);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.nav-item span {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-40);
-  transition: all 0.25s ease;
-}
+    .nav-item:active {
+      transform: scale(0.92);
+    }
 
-.nav-item.active svg { fill: var(--accent); transform: scale(1.1); }
-.nav-item.active span { color: var(--accent); font-weight: 600; }
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--text-40);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
-/* Subtle dot under active tab instead of heavy pill */
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px; height: 4px;
-  background: var(--accent);
-  border-radius: 50%;
-  animation: dotPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes dotPop {
-  0%   { transform: translateX(-50%) scale(0); }
-  100% { transform: translateX(-50%) scale(1); }
-}
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-40);
+      transition: all 0.25s ease;
+    }
 
-/* ========================================
+    .nav-item.active svg {
+      fill: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .nav-item.active span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Subtle dot under active tab instead of heavy pill */
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: dotPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes dotPop {
+      0% {
+        transform: translateX(-50%) scale(0);
+      }
+
+      100% {
+        transform: translateX(-50%) scale(1);
+      }
+    }
+
+    /* ========================================
    SVG DEFS
    ======================================== */
-svg.defs { position: absolute; width: 0; height: 0; }
+    svg.defs {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
 
-/* ========================================
+    /* ========================================
    TASKS SCREEN
    ======================================== */
 
-/* Greeting */
-.greeting { margin-top: 4px; margin-bottom: 24px; }
-.greeting .subtitle {
-  color: var(--text-60);
-  font-size: 14px;
-  margin-top: 4px;
-}
-.greeting .streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-  padding: 6px 14px;
-  background: rgba(255, 107, 107, 0.08);
-  border-radius: var(--r-pill);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--coral);
-}
+    /* Greeting */
+    .greeting {
+      margin-top: 4px;
+      margin-bottom: 24px;
+    }
 
-/* ── Horizontal Date Scroller ── */
-.date-scroller-wrap {
-  position: relative;
-  margin-bottom: 24px;
-  border-radius: var(--r-lg);
-  overflow: hidden;
-}
-/* Left & right fade masks */
-.date-scroller-wrap::before,
-.date-scroller-wrap::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 32px;
-  z-index: 2;
-  pointer-events: none;
-}
-.date-scroller-wrap::before {
-  left: 0;
-  background: linear-gradient(to right, var(--surface), transparent);
-}
-.date-scroller-wrap::after {
-  right: 0;
-  background: linear-gradient(to left, var(--surface), transparent);
-}
+    .greeting .subtitle {
+      color: var(--text-60);
+      font-size: 14px;
+      margin-top: 4px;
+    }
 
-.date-scroller {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  padding: 8px 24px;
-  background: var(--surface);
-  border-radius: var(--r-lg);
-}
-.date-scroller::-webkit-scrollbar { display: none; }
+    .greeting .streak {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+      padding: 6px 14px;
+      background: rgba(255, 107, 107, 0.08);
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--coral);
+    }
 
-.date-chip {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 52px;
-  padding: 10px 0 12px;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  scroll-snap-align: center;
-  background: transparent;
-  position: relative;
-}
-.date-chip:hover { background: var(--surface-hover); }
+    /* ── Horizontal Date Scroller ── */
+    .date-scroller-wrap {
+      position: relative;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
 
-.date-chip .day-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-40);
-  text-transform: uppercase;
-}
-.date-chip .day-num {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-80);
-  font-variant-numeric: tabular-nums;
-}
-/* Today dot */
-.date-chip.is-today .day-num { color: var(--text-100); }
-.date-chip.is-today::after {
-  content: '';
-  width: 4px; height: 4px;
-  background: var(--accent);
-  border-radius: 50%;
-}
+    /* Left & right fade masks */
+    .date-scroller-wrap::before,
+    .date-scroller-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      z-index: 2;
+      pointer-events: none;
+    }
 
-/* Selected state */
-.date-chip.selected {
-  background: var(--accent);
-  box-shadow: var(--shadow-accent);
-}
-.date-chip.selected .day-label { color: rgba(13,17,23,0.7); }
-.date-chip.selected .day-num { color: var(--bg); }
-.date-chip.selected::after { background: var(--bg); }
+    .date-scroller-wrap::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg), transparent);
+    }
 
-/* Future date styling — slightly dimmer */
-.date-chip.future .day-num { color: var(--text-40); }
-.date-chip.future.selected .day-num { color: var(--bg); }
+    .date-scroller-wrap::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg), transparent);
+    }
 
-/* Date context label */
-.date-context {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.date-context .ctx-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-60);
-}
-.date-context .ctx-count {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-}
+    .date-scroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      padding: 8px 24px;
+    }
 
-/* ── Progress Ring ── NO borders, NO gradients, clean surface */
-.progress-section {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 32px 24px;
-  margin-bottom: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-}
+    .date-scroller::-webkit-scrollbar {
+      display: none;
+    }
 
-.ring-wrap {
-  position: relative;
-  width: 140px;
-  height: 140px;
-}
-.ring-wrap svg {
-  width: 140px; height: 140px;
-  transform: rotate(-90deg);
-}
-.ring-bg { fill: none; stroke: var(--surface-hover); stroke-width: 12; }
-.ring-fill {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 12;
-  stroke-linecap: round;
-  stroke-dasharray: 377;
-  stroke-dashoffset: 94.25; /* 75% filled */
-  transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+    .date-chip {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 52px;
+      padding: 10px 0 12px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      scroll-snap-align: center;
+      background: transparent;
+      position: relative;
+    }
 
-.ring-center {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-.ring-center .big-num {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-100);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-.ring-center .pct {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  margin-top: 2px;
-}
+    .date-chip:hover {
+      background: var(--surface-hover);
+    }
 
-.progress-label {
-  font-size: 14px;
-  color: var(--text-60);
-  margin-top: 12px;
-}
+    .date-chip .day-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-40);
+      text-transform: uppercase;
+    }
 
-/* ── Section label ── */
-.section-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-40);
-  margin-bottom: 12px;
-}
+    .date-chip .day-num {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-80);
+      font-variant-numeric: tabular-nums;
+    }
 
-/* ── Task Items ── No card borders, just spacing + subtle bg */
-.task-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 8px;
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-.task-item:active { transform: scale(0.98); }
-.task-item:hover { background: var(--surface-raised); }
+    /* Today dot */
+    .date-chip.is-today .day-num {
+      color: var(--text-100);
+    }
 
-/* Completed state — left accent bar + muted */
-.task-item.done {
-  background: var(--accent-5);
-}
-.task-item.done::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 8px; bottom: 8px;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 0 3px 3px 0;
-}
-.task-item.done .task-name {
-  text-decoration: line-through;
-  color: var(--text-40);
-}
+    .date-chip.is-today::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
 
-/* Circle checkbox */
-.check {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 2px solid var(--accent-20);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.task-item.done .check {
-  background: var(--accent);
-  border-color: var(--accent);
-  animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.check svg { width: 14px; height: 14px; fill: var(--bg); opacity: 0; }
-.task-item.done .check svg { opacity: 1; }
+    /* Selected state */
+    .date-chip.selected {
+      background: var(--accent);
+      box-shadow: var(--shadow-accent);
+    }
 
-@keyframes pop {
-  0%   { transform: scale(0.7); }
-  60%  { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
+    .date-chip.selected .day-label {
+      color: rgba(13, 17, 23, 0.7);
+    }
 
-.task-body { flex: 1; min-width: 0; }
-.task-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-100);
-  line-height: 1.3;
-}
-.task-tag {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 2px 8px;
-  background: var(--accent-8);
-  border-radius: var(--r-sm);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent-muted);
-}
+    .date-chip.selected .day-num {
+      color: var(--bg);
+    }
 
-/* Future task — dimmer, with schedule icon */
-.task-item.future-task {
-  background: transparent;
-  opacity: 0.6;
-}
-.task-item.future-task .check {
-  border-color: var(--text-20);
-  border-style: dashed;
-}
-.task-item.future-task .task-tag {
-  background: rgba(77,150,255,0.08);
-  color: var(--sky);
-}
+    .date-chip.selected::after {
+      background: var(--bg);
+    }
 
-/* FAB */
-.fab {
-  position: absolute;
-  bottom: 96px; right: 28px;
-  width: 56px; height: 56px;
-  background: var(--accent);
-  border-radius: var(--r-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-accent);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 40;
-  /* subtle inner white shadow for dimension */
-  box-shadow: var(--shadow-accent), inset 0 1px 1px rgba(255,255,255,0.15);
-}
-.fab:hover { transform: scale(1.06); }
-.fab:active { transform: scale(0.9); }
-.fab svg { width: 28px; height: 28px; fill: var(--bg); }
+    /* Future date styling — slightly dimmer */
+    .date-chip.future .day-num {
+      color: var(--text-40);
+    }
 
-/* ========================================
+    .date-chip.future.selected .day-num {
+      color: var(--bg);
+    }
+
+    /* Date context label */
+    .date-context {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .date-context .ctx-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-60);
+    }
+
+    .date-context .ctx-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* ── Progress Ring ── NO borders, NO gradients, clean surface */
+    .progress-section {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 32px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+
+    .ring-wrap svg {
+      width: 140px;
+      height: 140px;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: var(--surface-hover);
+      stroke-width: 12;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 94.25;
+      /* 75% filled */
+      transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .ring-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .ring-center .big-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-100);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .ring-center .pct {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: var(--text-60);
+      margin-top: 12px;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-40);
+      margin-bottom: 12px;
+    }
+
+    /* ── Task Items ── No card borders, just spacing + subtle bg */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      margin-bottom: 8px;
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .task-item:active {
+      transform: scale(0.98);
+    }
+
+    .task-item:hover {
+      background: var(--surface-raised);
+    }
+
+    /* Completed state — left accent bar + muted */
+    .task-item.done {
+      background: var(--accent-5);
+    }
+
+    .task-item.done::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .task-item.done .task-name {
+      text-decoration: line-through;
+      color: var(--text-40);
+    }
+
+    /* Circle checkbox */
+    .check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .task-item.done .check {
+      background: var(--accent);
+      border-color: var(--accent);
+      animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .check svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--bg);
+      opacity: 0;
+    }
+
+    .task-item.done .check svg {
+      opacity: 1;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0.7);
+      }
+
+      60% {
+        transform: scale(1.2);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-100);
+      line-height: 1.3;
+    }
+
+    .task-tag {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 8px;
+      background: var(--accent-8);
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-muted);
+    }
+
+    /* Future task — dimmer, with schedule icon */
+    .task-item.future-task {
+      background: transparent;
+      opacity: 0.6;
+    }
+
+    .task-item.future-task .check {
+      border-color: var(--text-20);
+      border-style: dashed;
+    }
+
+    .task-item.future-task .task-tag {
+      background: rgba(77, 150, 255, 0.08);
+      color: var(--sky);
+    }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: 96px;
+      right: 28px;
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      border-radius: var(--r-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-accent);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 40;
+      /* subtle inner white shadow for dimension */
+      box-shadow: var(--shadow-accent), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .fab:hover {
+      transform: scale(1.06);
+    }
+
+    .fab:active {
+      transform: scale(0.9);
+    }
+
+    .fab svg {
+      width: 28px;
+      height: 28px;
+      fill: var(--bg);
+    }
+
+    /* ========================================
    NUTRITION SCREEN
    ======================================== */
 
-/* Date nav */
-.date-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 8px 0 24px;
-}
-.date-arrow {
-  width: 36px; height: 36px;
-  background: var(--surface);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.date-arrow:hover { background: var(--surface-hover); }
-.date-arrow svg { width: 18px; height: 18px; fill: var(--text-60); }
+    /* Date nav */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 0 24px;
+    }
 
-.today-label {
-  padding: 6px 16px;
-  background: var(--accent-8);
-  border-radius: var(--r-pill);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-}
+    .date-arrow {
+      width: 36px;
+      height: 36px;
+      background: var(--surface);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
-/* Calorie ring — no borders, no gradients */
-.calorie-section {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 32px 24px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-sm);
-}
+    .date-arrow:hover {
+      background: var(--surface-hover);
+    }
 
-.cal-ring-wrap {
-  position: relative;
-  width: 180px; height: 180px;
-}
-.cal-ring-wrap svg {
-  width: 180px; height: 180px;
-  transform: rotate(-90deg);
-}
-.cal-ring-bg { fill: none; stroke: var(--surface-hover); stroke-width: 16; }
-.cal-arc {
-  fill: none;
-  stroke-width: 16;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s ease;
-}
+    .date-arrow svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-60);
+    }
 
-.cal-center {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-.cal-center .cal-small { font-size: 11px; color: var(--text-40); }
-.cal-center .cal-big {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-.cal-center .cal-unit { font-size: 14px; color: var(--text-60); }
+    .today-label {
+      padding: 6px 16px;
+      background: var(--accent-8);
+      border-radius: var(--r-pill);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
 
-/* Macro pills — no borders */
-.macros {
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-  width: 100%;
-}
-.macro {
-  flex: 1;
-  background: var(--surface-raised);
-  border-radius: var(--r-md);
-  padding: 12px 8px;
-  text-align: center;
-}
-.macro .m-label { font-size: 11px; font-weight: 600; }
-.macro.pro .m-label { color: var(--coral); }
-.macro.fat .m-label { color: var(--amber); }
-.macro.carb .m-label { color: var(--sky); }
-.macro.sug .m-label { color: var(--mint); }
-.macro .m-val {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-100);
-  font-variant-numeric: tabular-nums;
-  margin-top: 2px;
-}
-.macro .m-pct { font-size: 11px; color: var(--text-40); margin-top: 2px; }
+    /* Calorie ring — no borders, no gradients */
+    .calorie-section {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 32px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
 
-/* Goal rows — no card borders */
-.goal-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.goal-row:last-child { border-bottom: none; }
+    .cal-ring-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
 
-.goal-icon {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 14px;
-}
-.goal-icon.ok { background: var(--accent-12); }
-.goal-icon.bad { background: rgba(255,107,107,0.12); }
+    .cal-ring-wrap svg {
+      width: 180px;
+      height: 180px;
+      transform: rotate(-90deg);
+    }
 
-.goal-body { flex: 1; }
-.goal-name { font-size: 14px; font-weight: 600; color: var(--text-100); }
-.goal-bar {
-  height: 4px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 2px;
-  margin-top: 6px;
-  overflow: hidden;
-}
-.goal-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.8s ease;
-}
-.goal-pct { font-size: 14px; font-weight: 600; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .cal-ring-bg {
+      fill: none;
+      stroke: var(--surface-hover);
+      stroke-width: 16;
+    }
 
-/* Meal items — colored left accent, no card borders */
-.meal-item {
-  padding: 16px;
-  margin-bottom: 8px;
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  position: relative;
-  padding-left: 20px;
-}
-.meal-item::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 10px; bottom: 10px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-}
-.meal-item.m-coral::before { background: var(--coral); }
-.meal-item.m-sky::before { background: var(--sky); }
-.meal-item.m-amber::before { background: var(--amber); }
+    .cal-arc {
+      fill: none;
+      stroke-width: 16;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s ease;
+    }
 
-.meal-top {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-.meal-type { font-size: 11px; font-weight: 500; color: var(--text-40); text-transform: uppercase; letter-spacing: 0.5px; }
-.meal-time { font-size: 11px; color: var(--text-40); }
-.meal-name { font-size: 15px; font-weight: 600; color: var(--text-100); }
-.meal-kcal { font-size: 13px; color: var(--text-60); margin: 4px 0 8px; }
+    .cal-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
 
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip {
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
-  font-size: 11px;
-  font-weight: 600;
-}
-.chip.c-pro { background: rgba(255,107,107,0.08); color: var(--coral); }
-.chip.c-carb { background: rgba(77,150,255,0.08); color: var(--sky); }
-.chip.c-fat { background: rgba(255,217,61,0.08); color: var(--amber); }
+    .cal-center .cal-small {
+      font-size: 11px;
+      color: var(--text-40);
+    }
 
-/* ========================================
+    .cal-center .cal-big {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .cal-center .cal-unit {
+      font-size: 14px;
+      color: var(--text-60);
+    }
+
+    /* Macro pills — no borders */
+    .macros {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .macro {
+      flex: 1;
+      background: var(--surface-raised);
+      border-radius: var(--r-md);
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .macro .m-label {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .macro.pro .m-label {
+      color: var(--coral);
+    }
+
+    .macro.fat .m-label {
+      color: var(--amber);
+    }
+
+    .macro.carb .m-label {
+      color: var(--sky);
+    }
+
+    .macro.sug .m-label {
+      color: var(--mint);
+    }
+
+    .macro .m-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-100);
+      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
+    }
+
+    .macro .m-pct {
+      font-size: 11px;
+      color: var(--text-40);
+      margin-top: 2px;
+    }
+
+    /* Goal rows — no card borders */
+    .goal-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .goal-row:last-child {
+      border-bottom: none;
+    }
+
+    .goal-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .goal-icon.ok {
+      background: var(--accent-12);
+    }
+
+    .goal-icon.bad {
+      background: rgba(255, 107, 107, 0.12);
+    }
+
+    .goal-body {
+      flex: 1;
+    }
+
+    .goal-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-100);
+    }
+
+    .goal-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .goal-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    .goal-pct {
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Meal items — colored left accent, no card borders */
+    .meal-item {
+      padding: 16px;
+      margin-bottom: 8px;
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .meal-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .meal-item.m-coral::before {
+      background: var(--coral);
+    }
+
+    .meal-item.m-sky::before {
+      background: var(--sky);
+    }
+
+    .meal-item.m-amber::before {
+      background: var(--amber);
+    }
+
+    .meal-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .meal-type {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-40);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meal-time {
+      font-size: 11px;
+      color: var(--text-40);
+    }
+
+    .meal-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-100);
+    }
+
+    .meal-kcal {
+      font-size: 13px;
+      color: var(--text-60);
+      margin: 4px 0 8px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 2px 8px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .chip.c-pro {
+      background: rgba(255, 107, 107, 0.08);
+      color: var(--coral);
+    }
+
+    .chip.c-carb {
+      background: rgba(77, 150, 255, 0.08);
+      color: var(--sky);
+    }
+
+    .chip.c-fat {
+      background: rgba(255, 217, 61, 0.08);
+      color: var(--amber);
+    }
+
+    /* ========================================
    DASHBOARD SCREEN
    ======================================== */
 
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-.screen-title { margin-top: 4px; }
-.screen-title .subtitle { font-size: 14px; color: var(--text-60); margin-top: 4px; }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
 
-.settings-icon {
-  width: 40px; height: 40px;
-  background: var(--surface);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.settings-icon:hover { background: var(--surface-hover); }
-.settings-icon svg { width: 20px; height: 20px; fill: var(--accent); }
+    .screen-title {
+      margin-top: 4px;
+    }
 
-/* Stat row — no borders, just raised surface */
-.stats-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-.stat {
-  flex: 1;
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-.stat .s-icon {
-  position: absolute;
-  top: 12px; right: 12px;
-  font-size: 28px;
-  opacity: 0.1;
-}
-.stat .s-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-100);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-.stat .s-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-40);
-  margin-top: 4px;
-}
+    .screen-title .subtitle {
+      font-size: 14px;
+      color: var(--text-60);
+      margin-top: 4px;
+    }
 
-/* Bar chart — clean, no card border */
-.chart-section {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-sm);
-}
-.chart-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.trend-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: var(--accent-8);
-  border-radius: var(--r-pill);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-}
+    .settings-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--surface);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
-.bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 140px;
-  padding: 0 4px;
-  position: relative;
-}
-/* Faint grid lines */
-.bars::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 28px;
-  background: repeating-linear-gradient(
-    180deg,
-    transparent,
-    transparent calc(25% - 0.5px),
-    rgba(255,255,255,0.03) calc(25% - 0.5px),
-    rgba(255,255,255,0.03) 25%
-  );
-  pointer-events: none;
-}
-.bar-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  z-index: 1;
-}
-.bar-wrap {
-  width: 24px;
-  height: 110px;
-  display: flex;
-  align-items: flex-end;
-}
-.bar {
-  width: 100%;
-  border-radius: 6px 6px 2px 2px;
-  background: var(--accent);
-  transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-  position: relative;
-}
-.bar:hover { filter: brightness(1.2); }
-.bar:hover::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface-raised);
-  border-radius: var(--r-sm);
-  padding: 4px 8px;
-  font-size: 11px;
-  color: var(--text-100);
-  white-space: nowrap;
-  box-shadow: var(--shadow-md);
-  z-index: 10;
-}
-.bar-label { font-size: 11px; color: var(--text-40); }
+    .settings-icon:hover {
+      background: var(--surface-hover);
+    }
 
-/* Weekly calendar — no borders */
-.week-section {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 20px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-sm);
-}
-.week-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.week-arrow {
-  width: 28px; height: 28px;
-  background: var(--surface-hover);
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.week-arrow:hover { background: rgba(255,255,255,0.08); }
-.week-arrow svg { width: 16px; height: 16px; fill: var(--text-60); }
+    .settings-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--accent);
+    }
 
-.week-row {
-  display: flex;
-  gap: 4px;
-}
-.week-cell {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 0 14px;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.week-cell:hover { background: var(--surface-hover); }
-.week-cell .w-day { font-size: 11px; font-weight: 500; color: var(--text-40); }
-.week-cell .w-num { font-size: 16px; font-weight: 700; color: var(--text-80); font-variant-numeric: tabular-nums; }
+    /* Stat row — no borders, just raised surface */
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
 
-/* Today dot */
-.week-cell.is-today { position: relative; }
-.week-cell.is-today::after {
-  content: '';
-  width: 4px; height: 4px;
-  background: var(--accent);
-  border-radius: 50%;
-  margin-top: 4px;
-}
+    .stat {
+      flex: 1;
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
 
-.week-cell.sel {
-  background: var(--accent);
-  box-shadow: var(--shadow-accent);
-}
-.week-cell.sel .w-day { color: rgba(13,17,23,0.6); }
-.week-cell.sel .w-num { color: var(--bg); }
-.week-cell.sel::after { background: var(--bg); }
+    .stat .s-icon {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 28px;
+      opacity: 0.1;
+    }
 
-/* Mini ring */
-.mini-r {
-  width: 20px; height: 20px;
-}
-.mini-r svg { width: 20px; height: 20px; transform: rotate(-90deg); }
-.mr-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3; }
-.mr-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
-.week-cell.sel .mr-bg { stroke: rgba(13,17,23,0.25); }
-.week-cell.sel .mr-fill { stroke: var(--bg); }
+    .stat .s-val {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-100);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
 
-/* Heatmap — no card border */
-.heatmap-section {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 20px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-sm);
-}
-.heatmap-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
+    .stat .s-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-40);
+      margin-top: 4px;
+    }
 
-.heatmap-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 16px;
-}
-.hm-cell {
-  aspect-ratio: 1;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-  animation: cellIn 0.3s ease both;
-}
-.hm-cell:hover { transform: scale(1.15); z-index: 5; }
-.hm-cell.glow { box-shadow: 0 0 8px rgba(57,211,83,0.2); }
-.hm-cell.picked {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
+    /* Bar chart — clean, no card border */
+    .chart-section {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
 
-@keyframes cellIn {
-  from { opacity: 0; transform: scale(0.4); }
-  to   { opacity: 1; transform: scale(1); }
-}
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
 
-.hm-detail {
-  background: rgba(255,255,255,0.03);
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.hm-detail .hm-date { font-size: 14px; font-weight: 500; color: var(--text-80); }
-.hm-detail .hm-stats { font-size: 14px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .trend-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--accent-8);
+      border-radius: var(--r-pill);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
 
-.legend-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-}
-.legend-row span { font-size: 11px; color: var(--text-40); }
-.leg-sq { width: 12px; height: 12px; border-radius: 2px; }
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 140px;
+      padding: 0 4px;
+      position: relative;
+    }
 
-/* ========================================
+    /* Faint grid lines */
+    .bars::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 28px;
+      background: repeating-linear-gradient(180deg,
+          transparent,
+          transparent calc(25% - 0.5px),
+          rgba(255, 255, 255, 0.03) calc(25% - 0.5px),
+          rgba(255, 255, 255, 0.03) 25%);
+      pointer-events: none;
+    }
+
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      z-index: 1;
+    }
+
+    .bar-wrap {
+      width: 24px;
+      height: 110px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 6px 6px 2px 2px;
+      background: var(--accent);
+      transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .bar:hover {
+      filter: brightness(1.2);
+    }
+
+    .bar:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-raised);
+      border-radius: var(--r-sm);
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text-100);
+      white-space: nowrap;
+      box-shadow: var(--shadow-md);
+      z-index: 10;
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--text-40);
+    }
+
+    /* Weekly calendar — no borders */
+    .week-section {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 20px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .week-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .week-arrow {
+      width: 28px;
+      height: 28px;
+      background: var(--surface-hover);
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .week-arrow:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .week-arrow svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-60);
+    }
+
+    .week-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .week-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 0 14px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .week-cell:hover {
+      background: var(--surface-hover);
+    }
+
+    .week-cell .w-day {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-40);
+    }
+
+    .week-cell .w-num {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-80);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Today dot */
+    .week-cell.is-today {
+      position: relative;
+    }
+
+    .week-cell.is-today::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: 4px;
+    }
+
+    .week-cell.sel {
+      background: var(--accent);
+      box-shadow: var(--shadow-accent);
+    }
+
+    .week-cell.sel .w-day {
+      color: rgba(13, 17, 23, 0.6);
+    }
+
+    .week-cell.sel .w-num {
+      color: var(--bg);
+    }
+
+    .week-cell.sel::after {
+      background: var(--bg);
+    }
+
+    /* Mini ring */
+    .mini-r {
+      width: 20px;
+      height: 20px;
+    }
+
+    .mini-r svg {
+      width: 20px;
+      height: 20px;
+      transform: rotate(-90deg);
+    }
+
+    .mr-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+      stroke-width: 3;
+    }
+
+    .mr-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .week-cell.sel .mr-bg {
+      stroke: rgba(13, 17, 23, 0.25);
+    }
+
+    .week-cell.sel .mr-fill {
+      stroke: var(--bg);
+    }
+
+    /* Heatmap — no card border */
+    .heatmap-section {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 20px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .heatmap-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .hm-cell {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      animation: cellIn 0.3s ease both;
+    }
+
+    .hm-cell:hover {
+      transform: scale(1.15);
+      z-index: 5;
+    }
+
+    .hm-cell.glow {
+      box-shadow: 0 0 8px rgba(57, 211, 83, 0.2);
+    }
+
+    .hm-cell.picked {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    @keyframes cellIn {
+      from {
+        opacity: 0;
+        transform: scale(0.4);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .hm-detail {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .hm-detail .hm-date {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-80);
+    }
+
+    .hm-detail .hm-stats {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .legend-row span {
+      font-size: 11px;
+      color: var(--text-40);
+    }
+
+    .leg-sq {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    /* ========================================
    STAGGER ANIMATION
    ======================================== */
-.stag { animation: stag 0.4s ease both; }
-.stag:nth-child(1) { animation-delay: 0ms; }
-.stag:nth-child(2) { animation-delay: 40ms; }
-.stag:nth-child(3) { animation-delay: 80ms; }
-.stag:nth-child(4) { animation-delay: 120ms; }
-.stag:nth-child(5) { animation-delay: 160ms; }
-.stag:nth-child(6) { animation-delay: 200ms; }
-.stag:nth-child(7) { animation-delay: 240ms; }
-.stag:nth-child(8) { animation-delay: 280ms; }
+    .stag {
+      animation: stag 0.4s ease both;
+    }
 
-@keyframes stag {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    .stag:nth-child(1) {
+      animation-delay: 0ms;
+    }
 
-.bottom-pad { height: 24px; }
-</style>
+    .stag:nth-child(2) {
+      animation-delay: 40ms;
+    }
+
+    .stag:nth-child(3) {
+      animation-delay: 80ms;
+    }
+
+    .stag:nth-child(4) {
+      animation-delay: 120ms;
+    }
+
+    .stag:nth-child(5) {
+      animation-delay: 160ms;
+    }
+
+    .stag:nth-child(6) {
+      animation-delay: 200ms;
+    }
+
+    .stag:nth-child(7) {
+      animation-delay: 240ms;
+    }
+
+    .stag:nth-child(8) {
+      animation-delay: 280ms;
+    }
+
+    @keyframes stag {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .bottom-pad {
+      height: 24px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="phone">
-  <div class="notch"></div>
+  <div class="phone">
+    <div class="notch"></div>
 
-  <div class="status-bar">
-    <span style="font-weight:700">10:09</span>
-    <span class="status-icons">
-      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
-    </span>
-  </div>
+    <div class="status-bar">
+      <span style="font-weight:700">10:09</span>
+      <span class="status-icons">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" />
+        </svg>
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" />
+        </svg>
+      </span>
+    </div>
 
-  <!-- SVG defs -->
-  <svg class="defs">
-    <defs>
-      <linearGradient id="emeraldG" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#26A641"/>
-        <stop offset="100%" stop-color="#39D353"/>
-      </linearGradient>
-    </defs>
-  </svg>
+    <!-- SVG defs -->
+    <svg class="defs">
+      <defs>
+        <linearGradient id="emeraldG" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#26A641" />
+          <stop offset="100%" stop-color="#39D353" />
+        </linearGradient>
+      </defs>
+    </svg>
 
-  <div class="screen-content">
+    <div class="screen-content">
 
-    <!-- ═══════════════════════════════════
+      <!-- ═══════════════════════════════════
          TASKS SCREEN
          ═══════════════════════════════════ -->
-    <div id="s-tasks" class="screen active">
+      <div id="s-tasks" class="screen active">
 
-      <div class="greeting">
-        <div class="t1">Good evening! 🌙</div>
-        <div class="subtitle">Keep the momentum going</div>
-        <div class="streak">🔥 5 day streak</div>
-      </div>
+        <div class="greeting">
+          <div class="t1">Good evening! 🌙</div>
+          <!-- <div class="subtitle">Keep the momentum going</div> -->
+          <div class="streak">🔥 5 day streak</div>
+        </div>
 
-      <!-- Horizontal Date Scroller -->
-      <div class="date-scroller-wrap">
-        <div class="date-scroller" id="dateScroller">
+        <!-- Horizontal Date Scroller -->
+        <div class="date-scroller-wrap">
+          <div class="date-scroller" id="dateScroller">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Date context info -->
+        <div class="date-context">
+          <span class="ctx-label" id="ctxLabel">Today</span>
+          <span class="ctx-count" id="ctxCount">6 of 8 done</span>
+        </div>
+
+        <!-- Progress Ring -->
+        <div class="progress-section" id="progressSection">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 140 140">
+              <circle class="ring-bg" cx="70" cy="70" r="60" />
+              <circle class="ring-fill" cx="70" cy="70" r="60" id="ringFill" />
+            </svg>
+            <div class="ring-center">
+              <div class="big-num" id="ringNum">6/8</div>
+              <div class="pct" id="ringPct">75%</div>
+            </div>
+          </div>
+          <div class="progress-label" id="ringLabel">6 of 8 tasks completed</div>
+        </div>
+
+        <!-- Task list -->
+        <div class="section-label" id="taskSectionLabel">TODAY'S TASKS</div>
+        <div id="taskList">
           <!-- Populated by JS -->
         </div>
+
+        <div class="bottom-pad"></div>
       </div>
 
-      <!-- Date context info -->
-      <div class="date-context">
-        <span class="ctx-label" id="ctxLabel">Today</span>
-        <span class="ctx-count" id="ctxCount">6 of 8 done</span>
-      </div>
-
-      <!-- Progress Ring -->
-      <div class="progress-section" id="progressSection">
-        <div class="ring-wrap">
-          <svg viewBox="0 0 140 140">
-            <circle class="ring-bg" cx="70" cy="70" r="60"/>
-            <circle class="ring-fill" cx="70" cy="70" r="60" id="ringFill"/>
-          </svg>
-          <div class="ring-center">
-            <div class="big-num" id="ringNum">6/8</div>
-            <div class="pct" id="ringPct">75%</div>
-          </div>
-        </div>
-        <div class="progress-label" id="ringLabel">6 of 8 tasks completed</div>
-      </div>
-
-      <!-- Task list -->
-      <div class="section-label" id="taskSectionLabel">TODAY'S TASKS</div>
-      <div id="taskList">
-        <!-- Populated by JS -->
-      </div>
-
-      <div class="bottom-pad"></div>
-    </div>
-
-    <!-- ═══════════════════════════════════
+      <!-- ═══════════════════════════════════
          NUTRITION SCREEN
          ═══════════════════════════════════ -->
-    <div id="s-nutrition" class="screen">
+      <div id="s-nutrition" class="screen">
 
-      <div class="screen-title">
-        <div class="t1">Nutrition</div>
-        <div class="subtitle">Track your daily intake</div>
-      </div>
+        <div class="screen-title">
+          <div class="t1">Nutrition</div>
+          <!-- <div class="subtitle">Track your daily intake</div> -->
+        </div>
 
-      <div class="date-nav">
-        <div class="date-arrow"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <span class="today-label">📅 Today, Aug 12</span>
-        <div class="date-arrow"><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
-      </div>
+        <div class="date-nav">
+          <div class="date-arrow"><svg viewBox="0 0 24 24">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg></div>
+          <span class="today-label">📅 Today, Aug 12</span>
+          <div class="date-arrow"><svg viewBox="0 0 24 24">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+            </svg></div>
+        </div>
 
-      <div class="calorie-section">
-        <div class="cal-ring-wrap">
-          <svg viewBox="0 0 180 180">
-            <circle class="cal-ring-bg" cx="90" cy="90" r="72"/>
-            <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#FF6B6B" stroke-dasharray="452.39" stroke-dashoffset="338"/>
-            <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#FFD93D" stroke-dasharray="452.39" stroke-dashoffset="370" style="transform:rotate(90deg);transform-origin:center"/>
-            <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#4D96FF" stroke-dasharray="452.39" stroke-dashoffset="340" style="transform:rotate(155deg);transform-origin:center"/>
-            <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#6BCB77" stroke-dasharray="452.39" stroke-dashoffset="420" style="transform:rotate(243deg);transform-origin:center"/>
-          </svg>
-          <div class="cal-center">
-            <div class="cal-small">Calories</div>
-            <div class="cal-big mono">1,480</div>
-            <div class="cal-unit">kcal</div>
+        <div class="calorie-section">
+          <div class="cal-ring-wrap">
+            <svg viewBox="0 0 180 180">
+              <circle class="cal-ring-bg" cx="90" cy="90" r="72" />
+              <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#FF6B6B" stroke-dasharray="452.39"
+                stroke-dashoffset="338" />
+              <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#FFD93D" stroke-dasharray="452.39"
+                stroke-dashoffset="370" style="transform:rotate(90deg);transform-origin:center" />
+              <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#4D96FF" stroke-dasharray="452.39"
+                stroke-dashoffset="340" style="transform:rotate(155deg);transform-origin:center" />
+              <circle class="cal-arc" cx="90" cy="90" r="72" stroke="#6BCB77" stroke-dasharray="452.39"
+                stroke-dashoffset="420" style="transform:rotate(243deg);transform-origin:center" />
+            </svg>
+            <div class="cal-center">
+              <div class="cal-small">Calories</div>
+              <div class="cal-big mono">1,480</div>
+              <div class="cal-unit">kcal</div>
+            </div>
+          </div>
+          <div class="macros">
+            <div class="macro pro">
+              <div class="m-label">Protein</div>
+              <div class="m-val mono">95g</div>
+              <div class="m-pct">68%</div>
+            </div>
+            <div class="macro fat">
+              <div class="m-label">Fat</div>
+              <div class="m-val mono">58g</div>
+              <div class="m-pct">75%</div>
+            </div>
+            <div class="macro carb">
+              <div class="m-label">Carbs</div>
+              <div class="m-val mono">185g</div>
+              <div class="m-pct">56%</div>
+            </div>
+            <div class="macro sug">
+              <div class="m-label">Sugar</div>
+              <div class="m-val mono">32g</div>
+              <div class="m-pct">89%</div>
+            </div>
           </div>
         </div>
-        <div class="macros">
-          <div class="macro pro"><div class="m-label">Protein</div><div class="m-val mono">95g</div><div class="m-pct">68%</div></div>
-          <div class="macro fat"><div class="m-label">Fat</div><div class="m-val mono">58g</div><div class="m-pct">75%</div></div>
-          <div class="macro carb"><div class="m-label">Carbs</div><div class="m-val mono">185g</div><div class="m-pct">56%</div></div>
-          <div class="macro sug"><div class="m-label">Sugar</div><div class="m-val mono">32g</div><div class="m-pct">89%</div></div>
+
+        <div class="section-label">GOAL PROGRESS</div>
+        <div style="margin-bottom:32px">
+          <div class="goal-row stag">
+            <div class="goal-icon ok">✅</div>
+            <div class="goal-body">
+              <div class="goal-name">Calorie Limit ≤ 2,000</div>
+              <div class="goal-bar">
+                <div class="goal-fill" style="width:74%;background:var(--accent)"></div>
+              </div>
+            </div>
+            <div class="goal-pct" style="color:var(--accent)">74%</div>
+          </div>
+          <div class="goal-row stag">
+            <div class="goal-icon ok">✅</div>
+            <div class="goal-body">
+              <div class="goal-name">Protein ≥ 130g</div>
+              <div class="goal-bar">
+                <div class="goal-fill" style="width:73%;background:var(--coral)"></div>
+              </div>
+            </div>
+            <div class="goal-pct" style="color:var(--coral)">73%</div>
+          </div>
+          <div class="goal-row stag">
+            <div class="goal-icon ok">✅</div>
+            <div class="goal-body">
+              <div class="goal-name">Sugar ≤ 40g</div>
+              <div class="goal-bar">
+                <div class="goal-fill" style="width:80%;background:var(--mint)"></div>
+              </div>
+            </div>
+            <div class="goal-pct" style="color:var(--mint)">80%</div>
+          </div>
+          <div class="goal-row stag">
+            <div class="goal-icon bad">❌</div>
+            <div class="goal-body">
+              <div class="goal-name">Fat ≤ 50g</div>
+              <div class="goal-bar">
+                <div class="goal-fill" style="width:100%;background:var(--coral)"></div>
+              </div>
+            </div>
+            <div class="goal-pct" style="color:var(--coral)">116%</div>
+          </div>
         </div>
+
+        <div class="section-label">TODAY'S MEALS</div>
+
+        <div class="meal-item m-coral stag">
+          <div class="meal-top"><span class="meal-type">Breakfast</span><span class="meal-time">7:15 AM</span></div>
+          <div class="meal-name">Oatmeal &amp; Berries</div>
+          <div class="meal-kcal">420 kcal</div>
+          <div class="chips"><span class="chip c-pro">Pro 12g</span><span class="chip c-carb">Carb 65g</span><span
+              class="chip c-fat">Fat 8g</span></div>
+        </div>
+        <div class="meal-item m-sky stag">
+          <div class="meal-top"><span class="meal-type">Lunch</span><span class="meal-time">1:30 PM</span></div>
+          <div class="meal-name">Grilled Chicken Salad</div>
+          <div class="meal-kcal">680 kcal</div>
+          <div class="chips"><span class="chip c-pro">Pro 45g</span><span class="chip c-carb">Carb 28g</span><span
+              class="chip c-fat">Fat 15g</span></div>
+        </div>
+        <div class="meal-item m-amber stag">
+          <div class="meal-top"><span class="meal-type">Snack</span><span class="meal-time">4:00 PM</span></div>
+          <div class="meal-name">Trail Mix &amp; Protein Bar</div>
+          <div class="meal-kcal">380 kcal</div>
+          <div class="chips"><span class="chip c-pro">Pro 22g</span><span class="chip c-carb">Carb 40g</span><span
+              class="chip c-fat">Fat 18g</span></div>
+        </div>
+
+        <div class="bottom-pad"></div>
       </div>
 
-      <div class="section-label">GOAL PROGRESS</div>
-      <div style="margin-bottom:32px">
-        <div class="goal-row stag">
-          <div class="goal-icon ok">✅</div>
-          <div class="goal-body"><div class="goal-name">Calorie Limit ≤ 2,000</div><div class="goal-bar"><div class="goal-fill" style="width:74%;background:var(--accent)"></div></div></div>
-          <div class="goal-pct" style="color:var(--accent)">74%</div>
-        </div>
-        <div class="goal-row stag">
-          <div class="goal-icon ok">✅</div>
-          <div class="goal-body"><div class="goal-name">Protein ≥ 130g</div><div class="goal-bar"><div class="goal-fill" style="width:73%;background:var(--coral)"></div></div></div>
-          <div class="goal-pct" style="color:var(--coral)">73%</div>
-        </div>
-        <div class="goal-row stag">
-          <div class="goal-icon ok">✅</div>
-          <div class="goal-body"><div class="goal-name">Sugar ≤ 40g</div><div class="goal-bar"><div class="goal-fill" style="width:80%;background:var(--mint)"></div></div></div>
-          <div class="goal-pct" style="color:var(--mint)">80%</div>
-        </div>
-        <div class="goal-row stag">
-          <div class="goal-icon bad">❌</div>
-          <div class="goal-body"><div class="goal-name">Fat ≤ 50g</div><div class="goal-bar"><div class="goal-fill" style="width:100%;background:var(--coral)"></div></div></div>
-          <div class="goal-pct" style="color:var(--coral)">116%</div>
-        </div>
-      </div>
-
-      <div class="section-label">TODAY'S MEALS</div>
-
-      <div class="meal-item m-coral stag">
-        <div class="meal-top"><span class="meal-type">Breakfast</span><span class="meal-time">7:15 AM</span></div>
-        <div class="meal-name">Oatmeal &amp; Berries</div>
-        <div class="meal-kcal">420 kcal</div>
-        <div class="chips"><span class="chip c-pro">Pro 12g</span><span class="chip c-carb">Carb 65g</span><span class="chip c-fat">Fat 8g</span></div>
-      </div>
-      <div class="meal-item m-sky stag">
-        <div class="meal-top"><span class="meal-type">Lunch</span><span class="meal-time">1:30 PM</span></div>
-        <div class="meal-name">Grilled Chicken Salad</div>
-        <div class="meal-kcal">680 kcal</div>
-        <div class="chips"><span class="chip c-pro">Pro 45g</span><span class="chip c-carb">Carb 28g</span><span class="chip c-fat">Fat 15g</span></div>
-      </div>
-      <div class="meal-item m-amber stag">
-        <div class="meal-top"><span class="meal-type">Snack</span><span class="meal-time">4:00 PM</span></div>
-        <div class="meal-name">Trail Mix &amp; Protein Bar</div>
-        <div class="meal-kcal">380 kcal</div>
-        <div class="chips"><span class="chip c-pro">Pro 22g</span><span class="chip c-carb">Carb 40g</span><span class="chip c-fat">Fat 18g</span></div>
-      </div>
-
-      <div class="bottom-pad"></div>
-    </div>
-
-    <!-- ═══════════════════════════════════
+      <!-- ═══════════════════════════════════
          DASHBOARD SCREEN
          ═══════════════════════════════════ -->
-    <div id="s-dashboard" class="screen">
+      <div id="s-dashboard" class="screen">
 
-      <div class="header-row">
-        <div class="screen-title">
-          <div class="t1">Dashboard</div>
-          <div class="subtitle">Your productivity at a glance</div>
-        </div>
-        <div class="settings-icon">
-          <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-        </div>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat"><span class="s-icon">📋</span><div class="s-val mono" data-count="42">0</div><div class="s-label">Total Tasks</div></div>
-        <div class="stat"><span class="s-icon">🏆</span><div class="s-val mono" data-count="34">0</div><div class="s-label">Completed</div></div>
-        <div class="stat"><span class="s-icon">📈</span><div class="s-val mono" data-count="81" data-suf="%">0%</div><div class="s-label">7-Day Rate</div></div>
-      </div>
-
-      <div class="chart-section">
-        <div class="chart-head">
-          <span class="t2">Weekly Performance</span>
-          <span class="trend-pill">↑ +8%</span>
-        </div>
-        <div class="bars">
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:60%" data-tip="Mon: 3/5 (60%)"></div></div><span class="bar-label">Mon</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:100%" data-tip="Tue: 5/5 (100%)"></div></div><span class="bar-label">Tue</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:75%" data-tip="Wed: 3/4 (75%)"></div></div><span class="bar-label">Wed</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:83%" data-tip="Thu: 5/6 (83%)"></div></div><span class="bar-label">Thu</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:50%" data-tip="Fri: 2/4 (50%)"></div></div><span class="bar-label">Fri</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:100%" data-tip="Sat: 4/4 (100%)"></div></div><span class="bar-label">Sat</span></div>
-          <div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:75%" data-tip="Sun: 3/4 (75%)"></div></div><span class="bar-label">Sun</span></div>
-        </div>
-      </div>
-
-      <div class="week-section">
-        <div class="week-head">
-          <span class="t2">Week of Aug 11</span>
-          <div style="display:flex;gap:8px">
-            <div class="week-arrow"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-            <div class="week-arrow"><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+        <div class="header-row">
+          <div class="screen-title">
+            <div class="t1">Dashboard</div>
+            <div class="subtitle">Your productivity at a glance</div>
+          </div>
+          <div class="settings-icon">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+            </svg>
           </div>
         </div>
-        <div class="week-row">
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Mon</span><span class="w-num">11</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="17.6"/></svg></div></div>
-          <div class="week-cell is-today sel" onclick="selWeek(this)"><span class="w-day">Tue</span><span class="w-num">12</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="11"/></svg></div></div>
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Wed</span><span class="w-num">13</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44"/></svg></div></div>
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Thu</span><span class="w-num">14</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44"/></svg></div></div>
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Fri</span><span class="w-num">15</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44"/></svg></div></div>
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Sat</span><span class="w-num">16</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44"/></svg></div></div>
-          <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Sun</span><span class="w-num">17</span><div class="mini-r"><svg viewBox="0 0 20 20"><circle class="mr-bg" cx="10" cy="10" r="7"/><circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44"/></svg></div></div>
+
+        <div class="stats-row">
+          <div class="stat"><span class="s-icon">📋</span>
+            <div class="s-val mono" data-count="42">0</div>
+            <div class="s-label">Total Tasks</div>
+          </div>
+          <div class="stat"><span class="s-icon">🏆</span>
+            <div class="s-val mono" data-count="34">0</div>
+            <div class="s-label">Completed</div>
+          </div>
+          <div class="stat"><span class="s-icon">📈</span>
+            <div class="s-val mono" data-count="81" data-suf="%">0%</div>
+            <div class="s-label">7-Day Rate</div>
+          </div>
         </div>
+
+        <div class="chart-section">
+          <div class="chart-head">
+            <span class="t2">Weekly Performance</span>
+            <span class="trend-pill">↑ +8%</span>
+          </div>
+          <div class="bars">
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:60%" data-tip="Mon: 3/5 (60%)"></div>
+              </div><span class="bar-label">Mon</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:100%" data-tip="Tue: 5/5 (100%)"></div>
+              </div><span class="bar-label">Tue</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:75%" data-tip="Wed: 3/4 (75%)"></div>
+              </div><span class="bar-label">Wed</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:83%" data-tip="Thu: 5/6 (83%)"></div>
+              </div><span class="bar-label">Thu</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:50%" data-tip="Fri: 2/4 (50%)"></div>
+              </div><span class="bar-label">Fri</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:100%" data-tip="Sat: 4/4 (100%)"></div>
+              </div><span class="bar-label">Sat</span>
+            </div>
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar" style="height:75%" data-tip="Sun: 3/4 (75%)"></div>
+              </div><span class="bar-label">Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="week-section">
+          <div class="week-head">
+            <span class="t2">Week of Aug 11</span>
+            <div style="display:flex;gap:8px">
+              <div class="week-arrow"><svg viewBox="0 0 24 24">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg></div>
+              <div class="week-arrow"><svg viewBox="0 0 24 24">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                </svg></div>
+            </div>
+          </div>
+          <div class="week-row">
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Mon</span><span class="w-num">11</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="17.6" />
+                </svg></div>
+            </div>
+            <div class="week-cell is-today sel" onclick="selWeek(this)"><span class="w-day">Tue</span><span
+                class="w-num">12</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="11" />
+                </svg></div>
+            </div>
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Wed</span><span class="w-num">13</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44" />
+                </svg></div>
+            </div>
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Thu</span><span class="w-num">14</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44" />
+                </svg></div>
+            </div>
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Fri</span><span class="w-num">15</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44" />
+                </svg></div>
+            </div>
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Sat</span><span class="w-num">16</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44" />
+                </svg></div>
+            </div>
+            <div class="week-cell" onclick="selWeek(this)"><span class="w-day">Sun</span><span class="w-num">17</span>
+              <div class="mini-r"><svg viewBox="0 0 20 20">
+                  <circle class="mr-bg" cx="10" cy="10" r="7" />
+                  <circle class="mr-fill" cx="10" cy="10" r="7" stroke-dasharray="44" stroke-dashoffset="44" />
+                </svg></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="heatmap-section">
+          <div class="heatmap-head">
+            <span class="t2">3-Month Activity</span>
+            <span class="t4">90 Days</span>
+          </div>
+          <div class="heatmap-grid" id="hmGrid"></div>
+          <div class="hm-detail">
+            <span class="hm-date" id="hmDate">Tue, Aug 12</span>
+            <span class="hm-stats" id="hmStats">5/6 Done (83%)</span>
+          </div>
+          <div class="legend-row">
+            <span>Less</span>
+            <div class="leg-sq" style="background:var(--h0)"></div>
+            <div class="leg-sq" style="background:var(--h1)"></div>
+            <div class="leg-sq" style="background:var(--h2)"></div>
+            <div class="leg-sq" style="background:var(--h3)"></div>
+            <div class="leg-sq" style="background:var(--h4)"></div>
+            <span>More</span>
+          </div>
+        </div>
+
+        <div class="bottom-pad"></div>
       </div>
 
-      <div class="heatmap-section">
-        <div class="heatmap-head">
-          <span class="t2">3-Month Activity</span>
-          <span class="t4">90 Days</span>
-        </div>
-        <div class="heatmap-grid" id="hmGrid"></div>
-        <div class="hm-detail">
-          <span class="hm-date" id="hmDate">Tue, Aug 12</span>
-          <span class="hm-stats" id="hmStats">5/6 Done (83%)</span>
-        </div>
-        <div class="legend-row">
-          <span>Less</span>
-          <div class="leg-sq" style="background:var(--h0)"></div>
-          <div class="leg-sq" style="background:var(--h1)"></div>
-          <div class="leg-sq" style="background:var(--h2)"></div>
-          <div class="leg-sq" style="background:var(--h3)"></div>
-          <div class="leg-sq" style="background:var(--h4)"></div>
-          <span>More</span>
-        </div>
+    </div><!-- end screen-content -->
+
+    <!-- FAB -->
+    <div class="fab" id="fab">
+      <svg viewBox="0 0 24 24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+      </svg>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active" data-s="tasks" onclick="go('tasks')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M22 5.18L10.59 16.6l-4.24-4.24l1.41-1.41l2.83 2.83l10-10L22 5.18zM19.79 10.22C19.92 10.79 20 11.39 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8s3.58-8 8-8c1.58 0 3.04.46 4.28 1.25l1.44-1.44A9.9 9.9 0 0012 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10c0-1.19-.22-2.33-.6-3.39l-1.61 1.61z" />
+        </svg>
+        <span>Tasks</span>
       </div>
-
-      <div class="bottom-pad"></div>
-    </div>
-
-  </div><!-- end screen-content -->
-
-  <!-- FAB -->
-  <div class="fab" id="fab">
-    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-  </div>
-
-  <!-- Bottom Nav -->
-  <div class="bottom-nav">
-    <div class="nav-item active" data-s="tasks" onclick="go('tasks')">
-      <svg viewBox="0 0 24 24"><path d="M22 5.18L10.59 16.6l-4.24-4.24l1.41-1.41l2.83 2.83l10-10L22 5.18zM19.79 10.22C19.92 10.79 20 11.39 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8s3.58-8 8-8c1.58 0 3.04.46 4.28 1.25l1.44-1.44A9.9 9.9 0 0012 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10c0-1.19-.22-2.33-.6-3.39l-1.61 1.61z"/></svg>
-      <span>Tasks</span>
-    </div>
-    <div class="nav-item" data-s="nutrition" onclick="go('nutrition')">
-      <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
-      <span>Nutrition</span>
-    </div>
-    <div class="nav-item" data-s="dashboard" onclick="go('dashboard')">
-      <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
-      <span>Dashboard</span>
+      <div class="nav-item" data-s="nutrition" onclick="go('nutrition')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
+        </svg>
+        <span>Nutrition</span>
+      </div>
+      <div class="nav-item" data-s="dashboard" onclick="go('dashboard')">
+        <svg viewBox="0 0 24 24">
+          <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
+        </svg>
+        <span>Dashboard</span>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-// ═══════════════════════════════════════════
-// DATA — Simulated task database
-// ═══════════════════════════════════════════
-const TASKS_DB = {
-  // Recurring tasks visible on all days
-  recurring: [
-    { name: 'Morning meditation', tag: 'Daily', recurrence: 'daily' },
-    { name: 'Read 20 pages', tag: 'Daily', recurrence: 'daily' },
-    { name: 'Drink 2L water', tag: 'Daily', recurrence: 'daily' },
-  ],
-  // Specific recurring patterns
-  weekday: [
-    { name: 'Review pull requests', tag: 'Mon–Fri', recurrence: 'weekday' },
-    { name: 'Stand-up meeting', tag: 'Mon–Fri', recurrence: 'weekday' },
-  ],
-  mwf: [
-    { name: 'Gym workout', tag: 'Mon–Wed–Fri', recurrence: 'mwf' },
-  ],
-  weekly: [
-    { name: 'Team retrospective', tag: 'Weekly · Mon', recurrence: 'weekly', dow: 1 },
-    { name: 'Write blog post', tag: 'Weekly · Sun', recurrence: 'weekly', dow: 0 },
-    { name: 'Meal prep', tag: 'Weekly · Sun', recurrence: 'weekly', dow: 0 },
-  ],
-  // One-off tasks for today
-  today: [
-    { name: 'Complete UI designs', tag: 'Today only', recurrence: 'once' },
-    { name: 'Call dentist', tag: 'Today only', recurrence: 'once' },
-  ],
-  // Future planned tasks
-  future: {
-    1: [{ name: 'Doctor appointment', tag: 'Aug 13', recurrence: 'once' }],
-    3: [{ name: 'Submit project proposal', tag: 'Aug 15', recurrence: 'once' }],
-    5: [{ name: 'Birthday party 🎂', tag: 'Aug 17', recurrence: 'once' }],
-    7: [{ name: 'Dentist follow-up', tag: 'Aug 19', recurrence: 'once' }],
-  }
-};
+  <script>
+    // ═══════════════════════════════════════════
+    // DATA — Simulated task database
+    // ═══════════════════════════════════════════
+    const TASKS_DB = {
+      // Recurring tasks visible on all days
+      recurring: [
+        { name: 'Morning meditation', tag: 'Daily', recurrence: 'daily' },
+        { name: 'Read 20 pages', tag: 'Daily', recurrence: 'daily' },
+        { name: 'Drink 2L water', tag: 'Daily', recurrence: 'daily' },
+      ],
+      // Specific recurring patterns
+      weekday: [
+        { name: 'Review pull requests', tag: 'Mon–Fri', recurrence: 'weekday' },
+        { name: 'Stand-up meeting', tag: 'Mon–Fri', recurrence: 'weekday' },
+      ],
+      mwf: [
+        { name: 'Gym workout', tag: 'Mon–Wed–Fri', recurrence: 'mwf' },
+      ],
+      weekly: [
+        { name: 'Team retrospective', tag: 'Weekly · Mon', recurrence: 'weekly', dow: 1 },
+        { name: 'Write blog post', tag: 'Weekly · Sun', recurrence: 'weekly', dow: 0 },
+        { name: 'Meal prep', tag: 'Weekly · Sun', recurrence: 'weekly', dow: 0 },
+      ],
+      // One-off tasks for today
+      today: [
+        { name: 'Complete UI designs', tag: 'Today only', recurrence: 'once' },
+        { name: 'Call dentist', tag: 'Today only', recurrence: 'once' },
+      ],
+      // Future planned tasks
+      future: {
+        1: [{ name: 'Doctor appointment', tag: 'Aug 13', recurrence: 'once' }],
+        3: [{ name: 'Submit project proposal', tag: 'Aug 15', recurrence: 'once' }],
+        5: [{ name: 'Birthday party 🎂', tag: 'Aug 17', recurrence: 'once' }],
+        7: [{ name: 'Dentist follow-up', tag: 'Aug 19', recurrence: 'once' }],
+      }
+    };
 
-// Today's completed task names
-const COMPLETED_TODAY = new Set([
-  'Complete UI designs',
-  'Morning meditation',
-  'Review pull requests',
-  'Stand-up meeting',
-  'Read 20 pages',
-  'Drink 2L water',
-]);
+    // Today's completed task names
+    const COMPLETED_TODAY = new Set([
+      'Complete UI designs',
+      'Morning meditation',
+      'Review pull requests',
+      'Stand-up meeting',
+      'Read 20 pages',
+      'Drink 2L water',
+    ]);
 
-// ═══════════════════════════════════════════
-// DATE SCROLLER
-// ═══════════════════════════════════════════
-const today = new Date();
-let selectedOffset = 0; // 0 = today, -1 = yesterday, +1 = tomorrow, etc.
+    // ═══════════════════════════════════════════
+    // DATE SCROLLER
+    // ═══════════════════════════════════════════
+    const today = new Date();
+    let selectedOffset = 0; // 0 = today, -1 = yesterday, +1 = tomorrow, etc.
 
-function buildDateScroller() {
-  const scroller = document.getElementById('dateScroller');
-  scroller.innerHTML = '';
+    function buildDateScroller() {
+      const scroller = document.getElementById('dateScroller');
+      scroller.innerHTML = '';
 
-  // Show 3 days before today + today + 10 days ahead
-  for (let i = -3; i <= 10; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
+      // Show 3 days before today + today + 10 days ahead
+      for (let i = -3; i <= 10; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
 
-    const chip = document.createElement('div');
-    chip.className = 'date-chip';
-    if (i === 0) chip.classList.add('is-today');
-    if (i > 0) chip.classList.add('future');
-    if (i === selectedOffset) chip.classList.add('selected');
+        const chip = document.createElement('div');
+        chip.className = 'date-chip';
+        if (i === 0) chip.classList.add('is-today');
+        if (i > 0) chip.classList.add('future');
+        if (i === selectedOffset) chip.classList.add('selected');
 
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    chip.innerHTML = `
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        chip.innerHTML = `
       <span class="day-label">${dayNames[d.getDay()]}</span>
       <span class="day-num">${d.getDate()}</span>
     `;
 
-    chip.addEventListener('click', () => {
-      selectedOffset = i;
-      buildDateScroller();
-      renderTasksForDate(i);
-    });
+        chip.addEventListener('click', () => {
+          selectedOffset = i;
+          buildDateScroller();
+          renderTasksForDate(i);
+        });
 
-    scroller.appendChild(chip);
-  }
+        scroller.appendChild(chip);
+      }
 
-  // Auto-scroll to center on selected chip
-  setTimeout(() => {
-    const sel = scroller.querySelector('.selected');
-    if (sel) sel.scrollIntoView({ inline: 'center', behavior: 'smooth' });
-  }, 50);
-}
-
-// ═══════════════════════════════════════════
-// RENDER TASKS FOR SELECTED DATE
-// ═══════════════════════════════════════════
-function renderTasksForDate(offset) {
-  const list = document.getElementById('taskList');
-  const label = document.getElementById('taskSectionLabel');
-  const ctx = document.getElementById('ctxLabel');
-  const ctxCount = document.getElementById('ctxCount');
-
-  const d = new Date(today);
-  d.setDate(d.getDate() + offset);
-  const dow = d.getDay(); // 0=Sun, 1=Mon...
-  const isWeekday = dow >= 1 && dow <= 5;
-  const isMWF = [1, 3, 5].includes(dow);
-  const isToday = offset === 0;
-  const isPast = offset < 0;
-  const isFuture = offset > 0;
-
-  // Build task list for this date
-  let tasks = [];
-
-  // Always add recurring daily tasks
-  TASKS_DB.recurring.forEach(t => tasks.push({ ...t }));
-
-  // Weekday tasks
-  if (isWeekday) TASKS_DB.weekday.forEach(t => tasks.push({ ...t }));
-
-  // MWF tasks
-  if (isMWF) TASKS_DB.mwf.forEach(t => tasks.push({ ...t }));
-
-  // Weekly tasks matching day-of-week
-  TASKS_DB.weekly.forEach(t => {
-    if (t.dow === dow) tasks.push({ ...t });
-  });
-
-  // Today-only tasks
-  if (isToday) TASKS_DB.today.forEach(t => tasks.push({ ...t }));
-
-  // Future one-off tasks
-  if (isFuture && TASKS_DB.future[offset]) {
-    TASKS_DB.future[offset].forEach(t => tasks.push({ ...t }));
-  }
-
-  // Determine completion
-  let completedCount = 0;
-  tasks.forEach(t => {
-    if (isToday && COMPLETED_TODAY.has(t.name)) {
-      t.done = true;
-      completedCount++;
-    } else if (isPast) {
-      // Random completion for past dates
-      t.done = Math.random() > 0.3;
-      if (t.done) completedCount++;
-    } else {
-      t.done = false;
+      // Auto-scroll to center on selected chip
+      setTimeout(() => {
+        const sel = scroller.querySelector('.selected');
+        if (sel) sel.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+      }, 50);
     }
-  });
 
-  // Update context
-  const dateOpts = { weekday: 'long', month: 'short', day: 'numeric' };
-  const dateStr = d.toLocaleDateString('en-US', dateOpts);
+    // ═══════════════════════════════════════════
+    // RENDER TASKS FOR SELECTED DATE
+    // ═══════════════════════════════════════════
+    function renderTasksForDate(offset) {
+      const list = document.getElementById('taskList');
+      const label = document.getElementById('taskSectionLabel');
+      const ctx = document.getElementById('ctxLabel');
+      const ctxCount = document.getElementById('ctxCount');
 
-  if (isToday) {
-    ctx.textContent = 'Today';
-    label.textContent = "TODAY'S TASKS";
-  } else if (offset === 1) {
-    ctx.textContent = 'Tomorrow';
-    label.textContent = "TOMORROW'S TASKS";
-  } else if (offset === -1) {
-    ctx.textContent = 'Yesterday';
-    label.textContent = "YESTERDAY'S TASKS";
-  } else if (isFuture) {
-    ctx.textContent = dateStr;
-    label.textContent = 'PLANNED TASKS';
-  } else {
-    ctx.textContent = dateStr;
-    label.textContent = 'PAST TASKS';
-  }
+      const d = new Date(today);
+      d.setDate(d.getDate() + offset);
+      const dow = d.getDay(); // 0=Sun, 1=Mon...
+      const isWeekday = dow >= 1 && dow <= 5;
+      const isMWF = [1, 3, 5].includes(dow);
+      const isToday = offset === 0;
+      const isPast = offset < 0;
+      const isFuture = offset > 0;
 
-  if (isFuture && !isPast && !isToday) {
-    ctxCount.textContent = `${tasks.length} planned`;
-  } else {
-    ctxCount.textContent = `${completedCount} of ${tasks.length} done`;
-  }
+      // Build task list for this date
+      let tasks = [];
 
-  // Update progress ring
-  const pct = tasks.length > 0 ? completedCount / tasks.length : 0;
-  const circumference = 2 * Math.PI * 60; // 377
-  const dashoffset = circumference * (1 - pct);
-  document.getElementById('ringFill').style.strokeDashoffset = dashoffset;
-  document.getElementById('ringNum').textContent = `${completedCount}/${tasks.length}`;
-  document.getElementById('ringPct').textContent = `${Math.round(pct * 100)}%`;
-  document.getElementById('ringLabel').textContent = isFuture
-    ? `${tasks.length} tasks planned`
-    : `${completedCount} of ${tasks.length} tasks completed`;
+      // Always add recurring daily tasks
+      TASKS_DB.recurring.forEach(t => tasks.push({ ...t }));
 
-  // For future dates, dim the ring
-  document.getElementById('ringFill').style.opacity = isFuture ? '0.3' : '1';
-  document.getElementById('progressSection').style.opacity = isFuture ? '0.7' : '1';
+      // Weekday tasks
+      if (isWeekday) TASKS_DB.weekday.forEach(t => tasks.push({ ...t }));
 
-  // Render task items
-  list.innerHTML = '';
-  tasks.forEach((t, i) => {
-    const item = document.createElement('div');
-    let cls = 'task-item stag';
-    if (t.done) cls += ' done';
-    if (isFuture && !t.done) cls += ' future-task';
-    item.className = cls;
-    item.style.animationDelay = (i * 40) + 'ms';
+      // MWF tasks
+      if (isMWF) TASKS_DB.mwf.forEach(t => tasks.push({ ...t }));
 
-    item.innerHTML = `
+      // Weekly tasks matching day-of-week
+      TASKS_DB.weekly.forEach(t => {
+        if (t.dow === dow) tasks.push({ ...t });
+      });
+
+      // Today-only tasks
+      if (isToday) TASKS_DB.today.forEach(t => tasks.push({ ...t }));
+
+      // Future one-off tasks
+      if (isFuture && TASKS_DB.future[offset]) {
+        TASKS_DB.future[offset].forEach(t => tasks.push({ ...t }));
+      }
+
+      // Determine completion
+      let completedCount = 0;
+      tasks.forEach(t => {
+        if (isToday && COMPLETED_TODAY.has(t.name)) {
+          t.done = true;
+          completedCount++;
+        } else if (isPast) {
+          // Random completion for past dates
+          t.done = Math.random() > 0.3;
+          if (t.done) completedCount++;
+        } else {
+          t.done = false;
+        }
+      });
+
+      // Update context
+      const dateOpts = { weekday: 'long', month: 'short', day: 'numeric' };
+      const dateStr = d.toLocaleDateString('en-US', dateOpts);
+
+      if (isToday) {
+        ctx.textContent = 'Today';
+        label.textContent = "TODAY'S TASKS";
+      } else if (offset === 1) {
+        ctx.textContent = 'Tomorrow';
+        label.textContent = "TOMORROW'S TASKS";
+      } else if (offset === -1) {
+        ctx.textContent = 'Yesterday';
+        label.textContent = "YESTERDAY'S TASKS";
+      } else if (isFuture) {
+        ctx.textContent = dateStr;
+        label.textContent = 'PLANNED TASKS';
+      } else {
+        ctx.textContent = dateStr;
+        label.textContent = 'PAST TASKS';
+      }
+
+      if (isFuture && !isPast && !isToday) {
+        ctxCount.textContent = `${tasks.length} planned`;
+      } else {
+        ctxCount.textContent = `${completedCount} of ${tasks.length} done`;
+      }
+
+      // Update progress ring
+      const pct = tasks.length > 0 ? completedCount / tasks.length : 0;
+      const circumference = 2 * Math.PI * 60; // 377
+      const dashoffset = circumference * (1 - pct);
+      document.getElementById('ringFill').style.strokeDashoffset = dashoffset;
+      document.getElementById('ringNum').textContent = `${completedCount}/${tasks.length}`;
+      document.getElementById('ringPct').textContent = `${Math.round(pct * 100)}%`;
+      document.getElementById('ringLabel').textContent = isFuture
+        ? `${tasks.length} tasks planned`
+        : `${completedCount} of ${tasks.length} tasks completed`;
+
+      // For future dates, dim the ring
+      document.getElementById('ringFill').style.opacity = isFuture ? '0.3' : '1';
+      document.getElementById('progressSection').style.opacity = isFuture ? '0.7' : '1';
+
+      // Render task items
+      list.innerHTML = '';
+      tasks.forEach((t, i) => {
+        const item = document.createElement('div');
+        let cls = 'task-item stag';
+        if (t.done) cls += ' done';
+        if (isFuture && !t.done) cls += ' future-task';
+        item.className = cls;
+        item.style.animationDelay = (i * 40) + 'ms';
+
+        item.innerHTML = `
       <div class="check">
         <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       </div>
@@ -1506,104 +2133,105 @@ function renderTasksForDate(offset) {
       </div>
     `;
 
-    // Toggle on click (only for today/past)
-    if (!isFuture) {
-      item.addEventListener('click', () => item.classList.toggle('done'));
+        // Toggle on click (only for today/past)
+        if (!isFuture) {
+          item.addEventListener('click', () => item.classList.toggle('done'));
+        }
+
+        list.appendChild(item);
+      });
     }
 
-    list.appendChild(item);
-  });
-}
+    // ═══════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════
+    function go(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('s-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelector(`.nav-item[data-s="${id}"]`).classList.add('active');
+      document.getElementById('fab').style.display = id === 'tasks' ? 'flex' : 'none';
+      document.querySelector('.screen-content').scrollTop = 0;
+      if (id === 'dashboard') { animateCounters(); buildHeatmap(); }
+    }
 
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
-function go(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('s-' + id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelector(`.nav-item[data-s="${id}"]`).classList.add('active');
-  document.getElementById('fab').style.display = id === 'tasks' ? 'flex' : 'none';
-  document.querySelector('.screen-content').scrollTop = 0;
-  if (id === 'dashboard') { animateCounters(); buildHeatmap(); }
-}
+    function selWeek(el) {
+      document.querySelectorAll('.week-cell').forEach(c => c.classList.remove('sel'));
+      el.classList.add('sel');
+    }
 
-function selWeek(el) {
-  document.querySelectorAll('.week-cell').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-}
+    // ═══════════════════════════════════════════
+    // ANIMATED COUNTERS
+    // ═══════════════════════════════════════════
+    function animateCounters() {
+      document.querySelectorAll('.s-val[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        const suf = el.dataset.suf || '';
+        let cur = 0;
+        const step = Math.max(1, Math.floor(target / 30));
+        const iv = setInterval(() => {
+          cur += step;
+          if (cur >= target) { cur = target; clearInterval(iv); }
+          el.textContent = cur + suf;
+        }, 30);
+      });
+    }
 
-// ═══════════════════════════════════════════
-// ANIMATED COUNTERS
-// ═══════════════════════════════════════════
-function animateCounters() {
-  document.querySelectorAll('.s-val[data-count]').forEach(el => {
-    const target = parseInt(el.dataset.count);
-    const suf = el.dataset.suf || '';
-    let cur = 0;
-    const step = Math.max(1, Math.floor(target / 30));
-    const iv = setInterval(() => {
-      cur += step;
-      if (cur >= target) { cur = target; clearInterval(iv); }
-      el.textContent = cur + suf;
-    }, 30);
-  });
-}
+    // ═══════════════════════════════════════════
+    // HEATMAP
+    // ═══════════════════════════════════════════
+    function buildHeatmap() {
+      const grid = document.getElementById('hmGrid');
+      if (grid.children.length > 0) return;
 
-// ═══════════════════════════════════════════
-// HEATMAP
-// ═══════════════════════════════════════════
-function buildHeatmap() {
-  const grid = document.getElementById('hmGrid');
-  if (grid.children.length > 0) return;
+      const levels = [0, 0, 1, 0, 2, 1, 3, 4, 2, 1, 0, 3, 4, 4, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 4, 3,
+        2, 1, 0, 2, 3, 4, 4, 3, 2, 1, 0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 3, 2, 1, 0, 0, 1, 2, 3, 4, 3,
+        2, 1, 4, 3, 2, 1, 0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 4, 3, 2, 1, 4, 3, 2, 1, 0, 0, 1];
+      const cols = ['var(--h0)', 'var(--h1)', 'var(--h2)', 'var(--h3)', 'var(--h4)'];
+      const comp = [0, 1, 2, 4, 5], tots = [0, 4, 4, 5, 5];
 
-  const levels = [0,0,1,0,2,1,3,4,2,1,0,3,4,4,2,1,0,0,1,2,3,4,3,2,1,0,0,1,4,3,
-                  2,1,0,2,3,4,4,3,2,1,0,1,2,3,4,4,3,2,1,0,3,2,1,0,0,1,2,3,4,3,
-                  2,1,4,3,2,1,0,1,2,3,4,4,3,2,1,0,0,1,2,4,3,2,1,4,3,2,1,0,0,1];
-  const cols = ['var(--h0)','var(--h1)','var(--h2)','var(--h3)','var(--h4)'];
-  const comp = [0,1,2,4,5], tots = [0,4,4,5,5];
+      levels.forEach((lv, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'hm-cell' + (lv >= 3 ? ' glow' : '');
+        cell.style.background = cols[lv];
+        cell.style.animationDelay = (i * 6) + 'ms';
 
-  levels.forEach((lv, i) => {
-    const cell = document.createElement('div');
-    cell.className = 'hm-cell' + (lv >= 3 ? ' glow' : '');
-    cell.style.background = cols[lv];
-    cell.style.animationDelay = (i * 6) + 'ms';
+        const cd = new Date(today);
+        cd.setDate(cd.getDate() - (89 - i));
+        cell.textContent = cd.getDate();
+        cell.style.color = lv >= 3 ? '#fff' : 'rgba(240,246,252,0.4)';
 
-    const cd = new Date(today);
-    cd.setDate(cd.getDate() - (89 - i));
-    cell.textContent = cd.getDate();
-    cell.style.color = lv >= 3 ? '#fff' : 'rgba(240,246,252,0.4)';
+        const ds = cd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const c = comp[lv], t = tots[lv], p = t > 0 ? Math.round(c / t * 100) : 0;
 
-    const ds = cd.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    const c = comp[lv], t = tots[lv], p = t > 0 ? Math.round(c/t*100) : 0;
+        cell.addEventListener('click', () => {
+          document.querySelectorAll('.hm-cell').forEach(x => x.classList.remove('picked'));
+          cell.classList.add('picked');
+          document.getElementById('hmDate').textContent = ds;
+          const statsEl = document.getElementById('hmStats');
+          statsEl.textContent = `${c}/${t} Done (${p}%)`;
+          statsEl.style.color = lv > 0 ? cols[lv] : 'var(--text-60)';
+        });
 
-    cell.addEventListener('click', () => {
-      document.querySelectorAll('.hm-cell').forEach(x => x.classList.remove('picked'));
-      cell.classList.add('picked');
-      document.getElementById('hmDate').textContent = ds;
-      const statsEl = document.getElementById('hmStats');
-      statsEl.textContent = `${c}/${t} Done (${p}%)`;
-      statsEl.style.color = lv > 0 ? cols[lv] : 'var(--text-60)';
+        grid.appendChild(cell);
+      });
+    }
+
+    // ═══════════════════════════════════════════
+    // BAR CHART ENTRY ANIMATION
+    // ═══════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.bar').forEach((b, i) => {
+        const h = b.style.height;
+        b.style.height = '0%';
+        setTimeout(() => b.style.height = h, 300 + i * 70);
+      });
+
+      buildDateScroller();
+      renderTasksForDate(0);
     });
-
-    grid.appendChild(cell);
-  });
-}
-
-// ═══════════════════════════════════════════
-// BAR CHART ENTRY ANIMATION
-// ═══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.bar').forEach((b, i) => {
-    const h = b.style.height;
-    b.style.height = '0%';
-    setTimeout(() => b.style.height = h, 300 + i * 70);
-  });
-
-  buildDateScroller();
-  renderTasksForDate(0);
-});
-</script>
+  </script>
 
 </body>
+
 </html>

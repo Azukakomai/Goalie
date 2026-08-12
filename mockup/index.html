@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Goalie — UI Redesign Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   DESIGN TOKENS
+   ======================================== */
+:root {
+  /* Dark theme (default) */
+  --bg: #0D1117;
+  --surface: #161B22;
+  --surface-elevated: #1C2128;
+  --surface-variant: #21262D;
+  --border: #30363D;
+
+  --text-primary: #F0F6FC;
+  --text-secondary: #8B949E;
+  --text-muted: #484F58;
+
+  --emerald: #39D353;
+  --emerald-bright: #39D353;
+  --emerald-medium: #26A641;
+  --emerald-dark: #006D32;
+  --emerald-darkest: #0E4429;
+
+  --glow-green: rgba(57, 211, 83, 0.2);
+  --gradient-start: rgba(57, 211, 83, 0.1);
+
+  --accent-coral: #FF6B6B;
+  --accent-amber: #FFD93D;
+  --accent-sky: #4D96FF;
+  --accent-mint: #6BCB77;
+
+  /* Heatmap levels */
+  --heatmap-0: #161B22;
+  --heatmap-1: #0E4429;
+  --heatmap-2: #006D32;
+  --heatmap-3: #26A641;
+  --heatmap-4: #39D353;
+
+  /* Shape system */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 50px;
+
+  /* Spacing */
+  --gap-section: 20px;
+  --padding-h: 24px;
+}
+
+/* ========================================
+   BASE / RESET
+   ======================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ========================================
+   PHONE FRAME
+   ======================================== */
+.phone-frame {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  margin: 20px auto;
+  background: var(--bg);
+  border-radius: 44px;
+  border: 3px solid #30363D;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 4px #0D1117,
+    0 25px 80px rgba(0,0,0,0.6),
+    0 0 60px rgba(57, 211, 83, 0.05);
+}
+
+/* Status bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  z-index: 10;
+  position: relative;
+}
+.status-bar .time { font-weight: 700; }
+.status-bar .icons { display: flex; gap: 6px; align-items: center; }
+.status-bar .icons svg { width: 16px; height: 16px; fill: var(--text-primary); }
+
+/* Dynamic island */
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+/* ========================================
+   SCREEN CONTENT AREA
+   ======================================== */
+.screen-content {
+  height: calc(100% - 44px - 78px); /* minus status bar & nav */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.screen-content::-webkit-scrollbar { display: none; }
+
+/* Screen containers */
+.screen {
+  display: none;
+  min-height: 100%;
+  padding: 0 var(--padding-h) 20px;
+  animation: screenFadeIn 0.35s ease;
+}
+.screen.active { display: block; }
+
+@keyframes screenFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   BOTTOM NAVIGATION BAR
+   ======================================== */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 78px;
+  background: var(--surface);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+  z-index: 50;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: var(--radius-md);
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item:active { transform: scale(0.92); }
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--text-muted);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-item span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.nav-item.active svg {
+  fill: var(--bg);
+  transform: scale(1.15);
+}
+.nav-item.active span {
+  color: var(--emerald);
+  font-weight: 700;
+}
+
+/* Floating pill indicator */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 32px;
+  background: var(--emerald);
+  border-radius: var(--radius-pill);
+  z-index: -1;
+  animation: pillBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pillBounce {
+  0%   { transform: translateX(-50%) scale(0.5); opacity: 0; }
+  60%  { transform: translateX(-50%) scale(1.1); }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ========================================
+   SHARED CARD STYLES
+   ======================================== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:active { transform: scale(0.98); }
+
+.card-elevated {
+  background: var(--surface-elevated);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+/* ========================================
+   TASKS SCREEN
+   ======================================== */
+
+/* Greeting header */
+.greeting {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.greeting h1 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  color: var(--text-primary);
+}
+.greeting .date {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.greeting .streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  background: rgba(255, 107, 107, 0.12);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: #FF6B6B;
+}
+
+/* Circular progress ring hero card */
+.progress-hero {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: var(--gap-section) 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.progress-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, var(--gradient-start) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.progress-ring-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  z-index: 1;
+}
+
+.progress-ring-container svg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: var(--surface-variant);
+  stroke-width: 12;
+}
+.progress-ring-fill {
+  fill: none;
+  stroke: url(#emeraldGradient);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 377;
+  stroke-dashoffset: 94.25;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.progress-ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.progress-ring-text .count {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.progress-ring-text .pct-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--emerald);
+  margin-top: 4px;
+}
+
+.progress-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  z-index: 1;
+}
+
+/* Task items */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.task-item:active { transform: scale(0.98); }
+
+.task-item.completed {
+  background: rgba(57, 211, 83, 0.06);
+  border-left: 3px solid var(--emerald);
+}
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Custom circle checkbox */
+.circle-check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+.circle-check:hover { border-color: var(--emerald-bright); }
+
+.task-item.completed .circle-check {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  animation: checkBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.circle-check svg { width: 14px; height: 14px; fill: var(--bg); opacity: 0; }
+.task-item.completed .circle-check svg { opacity: 1; }
+
+@keyframes checkBounce {
+  0%   { transform: scale(0.8); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.task-info { flex: 1; }
+.task-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.task-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  background: rgba(57, 211, 83, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+
+.swipe-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.swipe-hint svg { width: 14px; height: 14px; fill: var(--text-muted); }
+
+/* FAB */
+.fab {
+  position: absolute;
+  bottom: 100px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  background: var(--emerald);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(57, 211, 83, 0.35);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 40;
+}
+.fab:hover { transform: scale(1.05); box-shadow: 0 8px 32px rgba(57, 211, 83, 0.5); }
+.fab:active { transform: scale(0.9); }
+.fab svg { width: 28px; height: 28px; fill: var(--bg); }
+
+/* ========================================
+   DASHBOARD SCREEN
+   ======================================== */
+
+/* Gradient stat cards */
+.stat-cards-row {
+  display: flex;
+  gap: 10px;
+  margin: var(--gap-section) 0;
+}
+
+.stat-card {
+  flex: 1;
+  border-radius: var(--radius-lg);
+  padding: 16px 14px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  opacity: 0.12;
+  border-radius: var(--radius-lg);
+}
+.stat-card.blue    { background: var(--surface); }
+.stat-card.blue::before    { background: linear-gradient(135deg, var(--accent-sky), transparent 70%); }
+.stat-card.green   { background: var(--surface); }
+.stat-card.green::before   { background: linear-gradient(135deg, var(--emerald), transparent 70%); }
+.stat-card.amber   { background: var(--surface); }
+.stat-card.amber::before   { background: linear-gradient(135deg, var(--accent-amber), transparent 70%); }
+
+.stat-card .stat-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 32px;
+  opacity: 0.15;
+}
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+.stat-card .stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Vertical weekly bar chart */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: var(--gap-section);
+}
+.chart-card .chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.chart-card .chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.chart-card .trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(57, 211, 83, 0.1);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 160px;
+  padding: 0 4px;
+  position: relative;
+}
+
+/* Dashed grid lines */
+.bar-chart::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 24px;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent calc(25% - 1px),
+    var(--border) calc(25% - 1px),
+    var(--border) 25%
+  );
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  z-index: 1;
+}
+.bar-wrapper {
+  width: 28px;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--emerald-bright) 0%, var(--emerald-darkest) 100%);
+  transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+}
+.bar:hover { filter: brightness(1.15); }
+.bar:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.bar-day {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Heatmap */
+.heatmap-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: var(--gap-section);
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.heatmap-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.heatmap-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 14px;
+}
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.heatmap-cell:hover { transform: scale(1.15); z-index: 5; }
+.heatmap-cell.glow {
+  box-shadow: 0 0 10px var(--glow-green);
+}
+.heatmap-cell.selected {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 1px;
+  animation: cellPulse 1.5s ease infinite;
+}
+@keyframes cellPulse {
+  0%, 100% { outline-color: var(--text-primary); }
+  50%      { outline-color: var(--emerald); }
+}
+
+/* Heatmap detail bar */
+.heatmap-detail {
+  background: rgba(48, 54, 61, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.heatmap-detail .detail-date {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.heatmap-detail .detail-stats {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--emerald);
+}
+
+/* Legend */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.heatmap-legend span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.legend-block {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Weekly task calendar */
+.week-calendar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: var(--gap-section);
+}
+.week-calendar .cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.week-calendar .cal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.week-nav-btn {
+  background: var(--surface-variant);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.week-nav-btn:hover { background: var(--border); }
+
+.week-days {
+  display: flex;
+  gap: 6px;
+}
+.week-day-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: transparent;
+}
+.week-day-cell:hover { background: var(--surface-variant); }
+.week-day-cell.today { position: relative; }
+.week-day-cell.today::after {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--emerald);
+  border-radius: 50%;
+  margin-top: 4px;
+}
+.week-day-cell.selected {
+  background: var(--emerald);
+  animation: dayBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dayBounce {
+  0%   { transform: scale(0.9); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.week-day-cell .day-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.week-day-cell.selected .day-name { color: var(--bg); }
+.week-day-cell .day-num {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.week-day-cell.selected .day-num { color: var(--bg); }
+
+/* Mini progress ring in day cells */
+.mini-ring {
+  width: 22px; height: 22px;
+  position: relative;
+}
+.mini-ring svg { width: 22px; height: 22px; transform: rotate(-90deg); }
+.mini-ring-bg { fill: none; stroke: var(--surface-variant); stroke-width: 3; }
+.mini-ring-fill { fill: none; stroke: var(--emerald); stroke-width: 3; stroke-linecap: round; }
+.week-day-cell.selected .mini-ring-bg { stroke: rgba(13,17,23,0.3); }
+.week-day-cell.selected .mini-ring-fill { stroke: var(--bg); }
+
+/* ========================================
+   NUTRITION SCREEN
+   ======================================== */
+
+/* Date navigator */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 var(--gap-section);
+}
+.date-nav .nav-arrow {
+  width: 36px; height: 36px;
+  background: var(--surface-variant);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.date-nav .nav-arrow:hover { background: var(--border); }
+.date-nav .nav-arrow svg { width: 18px; height: 18px; fill: var(--text-secondary); }
+.date-nav .date-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.date-nav .today-pill {
+  padding: 4px 14px;
+  background: rgba(57, 211, 83, 0.12);
+  border: 1px solid rgba(57, 211, 83, 0.25);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+
+/* Calorie donut ring */
+.calorie-hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--gap-section);
+  position: relative;
+  overflow: hidden;
+}
+.calorie-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  background: linear-gradient(180deg, var(--gradient-start) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.calorie-ring-container {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  z-index: 1;
+}
+.calorie-ring-container svg {
+  width: 180px;
+  height: 180px;
+  transform: rotate(-90deg);
+}
+.calorie-ring-bg {
+  fill: none;
+  stroke: var(--surface-variant);
+  stroke-width: 16;
+}
+.macro-arc {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease;
+}
+
+.calorie-ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.calorie-ring-text .cal-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.calorie-ring-text .cal-value {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--emerald);
+  line-height: 1.1;
+}
+.calorie-ring-text .cal-unit {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Macro pills */
+.macro-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  z-index: 1;
+  width: 100%;
+}
+.macro-pill {
+  flex: 1;
+  background: var(--surface-variant);
+  border-radius: var(--radius-md);
+  padding: 10px 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.macro-pill .pill-name {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.macro-pill.protein .pill-name { color: var(--accent-coral); }
+.macro-pill.fat .pill-name     { color: var(--accent-amber); }
+.macro-pill.carbs .pill-name   { color: var(--accent-sky); }
+.macro-pill.sugar .pill-name   { color: var(--accent-mint); }
+
+.macro-pill .pill-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.macro-pill .pill-pct {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Goal badges */
+.goals-section { margin-bottom: var(--gap-section); }
+
+.goal-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.goal-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.goal-icon.met { background: rgba(57, 211, 83, 0.15); }
+.goal-icon.unmet { background: rgba(255, 107, 107, 0.15); }
+
+.goal-info { flex: 1; }
+.goal-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.goal-progress-bar {
+  height: 4px;
+  background: var(--surface-variant);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.goal-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+.goal-pct {
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Meal cards */
+.meal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+}
+.meal-card.coral-accent { border-left-color: var(--accent-coral); }
+.meal-card.sky-accent   { border-left-color: var(--accent-sky); }
+.meal-card.amber-accent { border-left-color: var(--accent-amber); }
+
+.meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.meal-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.meal-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.meal-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.meal-kcal {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.macro-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.macro-chip {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+}
+.macro-chip.protein { background: rgba(255,107,107,0.1); color: var(--accent-coral); }
+.macro-chip.fat     { background: rgba(255,217,61,0.1); color: var(--accent-amber); }
+.macro-chip.carbs   { background: rgba(77,150,255,0.1); color: var(--accent-sky); }
+
+/* ========================================
+   STAGGER ANIMATION (entry for lists)
+   ======================================== */
+.stagger-in { animation: staggerSlide 0.5s ease both; }
+.stagger-in:nth-child(1) { animation-delay: 0ms; }
+.stagger-in:nth-child(2) { animation-delay: 50ms; }
+.stagger-in:nth-child(3) { animation-delay: 100ms; }
+.stagger-in:nth-child(4) { animation-delay: 150ms; }
+.stagger-in:nth-child(5) { animation-delay: 200ms; }
+.stagger-in:nth-child(6) { animation-delay: 250ms; }
+.stagger-in:nth-child(7) { animation-delay: 300ms; }
+.stagger-in:nth-child(8) { animation-delay: 350ms; }
+
+@keyframes staggerSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   HEATMAP CASCADE ANIMATION
+   ======================================== */
+.heatmap-cell { animation: cellCascade 0.4s ease both; }
+
+@keyframes cellCascade {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Header for dashboard / nutrition */
+.screen-header {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.screen-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.screen-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.settings-btn {
+  width: 40px; height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.settings-btn:hover { background: var(--surface-variant); }
+.settings-btn svg { width: 20px; height: 20px; fill: var(--emerald); }
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Spacer at bottom of scrollable areas */
+.bottom-spacer { height: 20px; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="dynamic-island"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">10:09 AM</span>
+    <span class="icons">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </span>
+  </div>
+
+  <!-- SVG Definitions -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#26A641"/>
+        <stop offset="100%" stop-color="#39D353"/>
+      </linearGradient>
+      <linearGradient id="proteinArc" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#FF6B6B"/>
+        <stop offset="100%" stop-color="#FF8E8E"/>
+      </linearGradient>
+      <linearGradient id="fatArc" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#FFD93D"/>
+        <stop offset="100%" stop-color="#FFE680"/>
+      </linearGradient>
+      <linearGradient id="carbsArc" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4D96FF"/>
+        <stop offset="100%" stop-color="#80B3FF"/>
+      </linearGradient>
+      <linearGradient id="sugarArc" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#6BCB77"/>
+        <stop offset="100%" stop-color="#A3E4AE"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Screen Content Area -->
+  <div class="screen-content">
+
+    <!-- ===== TASKS SCREEN ===== -->
+    <div id="screen-tasks" class="screen active">
+      <div class="greeting">
+        <h1>Good evening, keep going! 🔥</h1>
+        <div class="date">Tuesday, August 12</div>
+        <div class="streak-badge">🔥 5 day streak</div>
+      </div>
+
+      <!-- Circular Progress Ring Hero -->
+      <div class="progress-hero">
+        <div class="progress-ring-container">
+          <svg viewBox="0 0 140 140">
+            <circle class="progress-ring-bg" cx="70" cy="70" r="60"/>
+            <circle class="progress-ring-fill" cx="70" cy="70" r="60"/>
+          </svg>
+          <div class="progress-ring-text">
+            <div class="count">6/8</div>
+            <div class="pct-label">75% Done</div>
+          </div>
+        </div>
+        <div class="progress-sub">6 of 8 tasks completed today</div>
+      </div>
+
+      <div class="section-label">Today's Tasks</div>
+
+      <!-- Task Items -->
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Complete UI designs</div>
+          <span class="task-badge">Daily</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Team Meeting at 11 AM</div>
+          <span class="task-badge">Weekly</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Review pull requests</div>
+          <span class="task-badge">Mon–Fri</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Read 20 pages</div>
+          <span class="task-badge">Daily</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Morning meditation</div>
+          <span class="task-badge">Daily</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item completed stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Call dentist</div>
+          <span class="task-badge">Today</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Gym workout</div>
+          <span class="task-badge">Mon–Wed–Fri</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="task-item stagger-in" onclick="this.classList.toggle('completed')">
+        <div class="circle-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div class="task-info">
+          <div class="task-title">Write blog post</div>
+          <span class="task-badge">Weekly</span>
+        </div>
+        <div class="swipe-hint">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+    </div>
+
+    <!-- ===== NUTRITION SCREEN ===== -->
+    <div id="screen-nutrition" class="screen">
+      <div class="header-row">
+        <div class="screen-header">
+          <h1>Nutrition</h1>
+          <p>Track your daily intake</p>
+        </div>
+      </div>
+
+      <!-- Date Navigator -->
+      <div class="date-nav">
+        <div class="nav-arrow">
+          <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </div>
+        <span class="today-pill">📅 Today, Aug 12</span>
+        <div class="nav-arrow">
+          <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+      </div>
+
+      <!-- Calorie Donut Ring -->
+      <div class="calorie-hero">
+        <div class="calorie-ring-container">
+          <svg viewBox="0 0 180 180">
+            <circle class="calorie-ring-bg" cx="90" cy="90" r="72"/>
+            <!-- Protein arc -->
+            <circle class="macro-arc" cx="90" cy="90" r="72"
+                    stroke="url(#proteinArc)"
+                    stroke-dasharray="452.39"
+                    stroke-dashoffset="338"/>
+            <!-- Fat arc -->
+            <circle class="macro-arc" cx="90" cy="90" r="72"
+                    stroke="url(#fatArc)"
+                    stroke-dasharray="452.39"
+                    stroke-dashoffset="370"
+                    style="transform: rotate(90deg); transform-origin: center;"/>
+            <!-- Carbs arc -->
+            <circle class="macro-arc" cx="90" cy="90" r="72"
+                    stroke="url(#carbsArc)"
+                    stroke-dasharray="452.39"
+                    stroke-dashoffset="340"
+                    style="transform: rotate(155deg); transform-origin: center;"/>
+            <!-- Sugar arc -->
+            <circle class="macro-arc" cx="90" cy="90" r="72"
+                    stroke="url(#sugarArc)"
+                    stroke-dasharray="452.39"
+                    stroke-dashoffset="420"
+                    style="transform: rotate(243deg); transform-origin: center;"/>
+          </svg>
+          <div class="calorie-ring-text">
+            <div class="cal-label">Calorie</div>
+            <div class="cal-value">1,480</div>
+            <div class="cal-unit">kcal</div>
+          </div>
+        </div>
+
+        <!-- Macro pills row -->
+        <div class="macro-pills">
+          <div class="macro-pill protein">
+            <div class="pill-name">Protein</div>
+            <div class="pill-value">95g</div>
+            <div class="pill-pct">68%</div>
+          </div>
+          <div class="macro-pill fat">
+            <div class="pill-name">Fat</div>
+            <div class="pill-value">58g</div>
+            <div class="pill-pct">75%</div>
+          </div>
+          <div class="macro-pill carbs">
+            <div class="pill-name">Carbs</div>
+            <div class="pill-value">185g</div>
+            <div class="pill-pct">56%</div>
+          </div>
+          <div class="macro-pill sugar">
+            <div class="pill-name">Sugar</div>
+            <div class="pill-value">32g</div>
+            <div class="pill-pct">89%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal Badges -->
+      <div class="section-label">Goal Progress</div>
+      <div class="goals-section">
+        <div class="goal-badge stagger-in">
+          <div class="goal-icon met">✅</div>
+          <div class="goal-info">
+            <div class="goal-name">Calorie Limit ≤ 2,000 kcal</div>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" style="width: 74%; background: var(--emerald);"></div>
+            </div>
+          </div>
+          <div class="goal-pct" style="color: var(--emerald);">74%</div>
+        </div>
+
+        <div class="goal-badge stagger-in">
+          <div class="goal-icon met">✅</div>
+          <div class="goal-info">
+            <div class="goal-name">Protein ≥ 130g</div>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" style="width: 73%; background: var(--accent-coral);"></div>
+            </div>
+          </div>
+          <div class="goal-pct" style="color: var(--accent-coral);">73%</div>
+        </div>
+
+        <div class="goal-badge stagger-in">
+          <div class="goal-icon met">✅</div>
+          <div class="goal-info">
+            <div class="goal-name">Sugar ≤ 40g</div>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" style="width: 80%; background: var(--accent-mint);"></div>
+            </div>
+          </div>
+          <div class="goal-pct" style="color: var(--accent-mint);">80%</div>
+        </div>
+
+        <div class="goal-badge stagger-in">
+          <div class="goal-icon unmet">❌</div>
+          <div class="goal-info">
+            <div class="goal-name">Fat ≤ 50g</div>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" style="width: 116%; background: var(--accent-coral);"></div>
+            </div>
+          </div>
+          <div class="goal-pct" style="color: var(--accent-coral);">116%</div>
+        </div>
+      </div>
+
+      <!-- Today's Meals -->
+      <div class="section-label">Today's Meals</div>
+
+      <div class="meal-card coral-accent stagger-in">
+        <div class="meal-header">
+          <span class="meal-type">Breakfast</span>
+          <span class="meal-time">7:15 AM</span>
+        </div>
+        <div class="meal-name">Oatmeal &amp; Berries</div>
+        <div class="meal-kcal">420 kcal</div>
+        <div class="macro-chips">
+          <span class="macro-chip protein">Pro 12g</span>
+          <span class="macro-chip carbs">Carb 65g</span>
+          <span class="macro-chip fat">Fat 8g</span>
+        </div>
+      </div>
+
+      <div class="meal-card sky-accent stagger-in">
+        <div class="meal-header">
+          <span class="meal-type">Lunch</span>
+          <span class="meal-time">1:30 PM</span>
+        </div>
+        <div class="meal-name">Grilled Chicken Salad</div>
+        <div class="meal-kcal">680 kcal</div>
+        <div class="macro-chips">
+          <span class="macro-chip protein">Pro 45g</span>
+          <span class="macro-chip carbs">Carb 28g</span>
+          <span class="macro-chip fat">Fat 15g</span>
+        </div>
+      </div>
+
+      <div class="meal-card amber-accent stagger-in">
+        <div class="meal-header">
+          <span class="meal-type">Snack</span>
+          <span class="meal-time">4:00 PM</span>
+        </div>
+        <div class="meal-name">Trail Mix &amp; Protein Bar</div>
+        <div class="meal-kcal">380 kcal</div>
+        <div class="macro-chips">
+          <span class="macro-chip protein">Pro 22g</span>
+          <span class="macro-chip carbs">Carb 40g</span>
+          <span class="macro-chip fat">Fat 18g</span>
+        </div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+    </div>
+
+    <!-- ===== DASHBOARD SCREEN ===== -->
+    <div id="screen-dashboard" class="screen">
+      <div class="header-row">
+        <div class="screen-header">
+          <h1>Analytics Dashboard</h1>
+          <p>Track your productivity &amp; consistency</p>
+        </div>
+        <div class="settings-btn">
+          <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-cards-row">
+        <div class="stat-card blue">
+          <span class="stat-icon">📋</span>
+          <div class="stat-value" data-count="42">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card green">
+          <span class="stat-icon">🏆</span>
+          <div class="stat-value" data-count="34">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card amber">
+          <span class="stat-icon">📈</span>
+          <div class="stat-value" data-count="81" data-suffix="%">0%</div>
+          <div class="stat-label">7-Day Rate</div>
+        </div>
+      </div>
+
+      <!-- Weekly Vertical Bar Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Weekly Performance</span>
+          <span class="trend-badge">↑ +8%</span>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 60%;" data-tooltip="Mon: 3/5 (60%)"></div></div>
+            <span class="bar-day">Mon</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 100%;" data-tooltip="Tue: 5/5 (100%)"></div></div>
+            <span class="bar-day">Tue</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 75%;" data-tooltip="Wed: 3/4 (75%)"></div></div>
+            <span class="bar-day">Wed</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 83%;" data-tooltip="Thu: 5/6 (83%)"></div></div>
+            <span class="bar-day">Thu</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 50%;" data-tooltip="Fri: 2/4 (50%)"></div></div>
+            <span class="bar-day">Fri</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 100%;" data-tooltip="Sat: 4/4 (100%)"></div></div>
+            <span class="bar-day">Sat</span>
+          </div>
+          <div class="bar-column">
+            <div class="bar-wrapper"><div class="bar" style="height: 75%;" data-tooltip="Sun: 3/4 (75%)"></div></div>
+            <span class="bar-day">Sun</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Task Calendar -->
+      <div class="week-calendar">
+        <div class="cal-header">
+          <span class="cal-title">Week of Aug 11</span>
+          <div style="display:flex;gap:8px;">
+            <div class="week-nav-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+            <div class="week-nav-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+          </div>
+        </div>
+        <div class="week-days">
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Mon</span>
+            <span class="day-num">11</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="20"/></svg></div>
+          </div>
+          <div class="week-day-cell today selected" onclick="selectDay(this)">
+            <span class="day-name">Tue</span>
+            <span class="day-num">12</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="12.5"/></svg></div>
+          </div>
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Wed</span>
+            <span class="day-num">13</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="50.27"/></svg></div>
+          </div>
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Thu</span>
+            <span class="day-num">14</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="50.27"/></svg></div>
+          </div>
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Fri</span>
+            <span class="day-num">15</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="50.27"/></svg></div>
+          </div>
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Sat</span>
+            <span class="day-num">16</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="50.27"/></svg></div>
+          </div>
+          <div class="week-day-cell" onclick="selectDay(this)">
+            <span class="day-name">Sun</span>
+            <span class="day-num">17</span>
+            <div class="mini-ring"><svg viewBox="0 0 22 22"><circle class="mini-ring-bg" cx="11" cy="11" r="8"/><circle class="mini-ring-fill" cx="11" cy="11" r="8" stroke-dasharray="50.27" stroke-dashoffset="50.27"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heatmap Grid -->
+      <div class="heatmap-card">
+        <div class="heatmap-header">
+          <span class="heatmap-title">3-Month Activity</span>
+          <span class="heatmap-subtitle">Scrollable · 90 Days</span>
+        </div>
+
+        <div class="heatmap-grid" id="heatmap-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="heatmap-detail">
+          <span class="detail-date" id="heatmap-date">Tue, Aug 12</span>
+          <span class="detail-stats" id="heatmap-stats">5/6 Done (83%)</span>
+        </div>
+
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <div class="legend-block" style="background: var(--heatmap-0);"></div>
+          <div class="legend-block" style="background: var(--heatmap-1);"></div>
+          <div class="legend-block" style="background: var(--heatmap-2);"></div>
+          <div class="legend-block" style="background: var(--heatmap-3);"></div>
+          <div class="legend-block" style="background: var(--heatmap-4);"></div>
+          <span>More</span>
+        </div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+    </div>
+
+  </div><!-- end screen-content -->
+
+  <!-- FAB (only on Tasks screen) -->
+  <div class="fab" id="fab" onclick="alert('Add Task dialog would open here')">
+    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <div class="nav-item active" data-screen="tasks" onclick="switchScreen('tasks')">
+      <svg viewBox="0 0 24 24"><path d="M22 5.18L10.59 16.6l-4.24-4.24l1.41-1.41l2.83 2.83l10-10L22 5.18zM19.79 10.22C19.92 10.79 20 11.39 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8s3.58-8 8-8c1.58 0 3.04.46 4.28 1.25l1.44-1.44A9.9 9.9 0 0012 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10c0-1.19-.22-2.33-.6-3.39l-1.61 1.61z"/></svg>
+      <span>Tasks</span>
+    </div>
+    <div class="nav-item" data-screen="nutrition" onclick="switchScreen('nutrition')">
+      <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+      <span>Nutrition</span>
+    </div>
+    <div class="nav-item" data-screen="dashboard" onclick="switchScreen('dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+      <span>Dashboard</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==============================
+// Navigation
+// ==============================
+function switchScreen(screenId) {
+  // Update screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screenId).classList.add('active');
+
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-screen="${screenId}"]`).classList.add('active');
+
+  // Show/hide FAB
+  document.getElementById('fab').style.display = screenId === 'tasks' ? 'flex' : 'none';
+
+  // Reset scroll
+  document.querySelector('.screen-content').scrollTop = 0;
+
+  // Trigger counter animations on dashboard
+  if (screenId === 'dashboard') {
+    animateCounters();
+    generateHeatmap();
+  }
+}
+
+// ==============================
+// Day selector in calendar
+// ==============================
+function selectDay(el) {
+  document.querySelectorAll('.week-day-cell').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ==============================
+// Animated number counters
+// ==============================
+function animateCounters() {
+  document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      el.textContent = current + suffix;
+    }, 25);
+  });
+}
+
+// ==============================
+// Generate heatmap cells
+// ==============================
+function generateHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  if (grid.children.length > 0) return; // already generated
+
+  const levels = [0,0,1,0,2,1,3,4,2,1,0,3,4,4,2,1,0,0,1,2,3,4,3,2,1,0,0,1,4,3,
+                  2,1,0,2,3,4,4,3,2,1,0,1,2,3,4,4,3,2,1,0,3,2,1,0,0,1,2,3,4,3,
+                  2,1,4,3,2,1,0,1,2,3,4,4,3,2,1,0,0,1,2,4,3,2,1,4,3,2,1,0,0,1];
+  const colors = ['var(--heatmap-0)','var(--heatmap-1)','var(--heatmap-2)','var(--heatmap-3)','var(--heatmap-4)'];
+  const months = ['May','Jun','Jul','Aug'];
+
+  const today = new Date();
+
+  levels.forEach((level, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell' + (level >= 3 ? ' glow' : '');
+    cell.style.background = colors[level];
+    cell.style.animationDelay = (i * 8) + 'ms';
+
+    // Date calc (go back from today)
+    const cellDate = new Date(today);
+    cellDate.setDate(cellDate.getDate() - (89 - i));
+    const dayNum = cellDate.getDate();
+    cell.textContent = dayNum;
+    cell.style.color = level >= 3 ? '#fff' : 'var(--text-secondary)';
+    cell.style.fontSize = '9px';
+
+    // Click handler
+    const dateStr = cellDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const completions = [0, 1, 2, 4, 5];
+    const totals = [0, 4, 4, 5, 5];
+    const comp = completions[level] || 0;
+    const tot = totals[level] || 0;
+    const pct = tot > 0 ? Math.round(comp/tot*100) : 0;
+
+    cell.addEventListener('click', () => {
+      document.querySelectorAll('.heatmap-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      document.getElementById('heatmap-date').textContent = dateStr;
+      document.getElementById('heatmap-stats').textContent = `${comp}/${tot} Done (${pct}%)`;
+      document.getElementById('heatmap-stats').style.color = level > 0 ? colors[level] : 'var(--text-secondary)';
+    });
+
+    grid.appendChild(cell);
+  });
+}
+
+// ==============================
+// Initialize
+// ==============================
+document.addEventListener('DOMContentLoaded', () => {
+  // Bar chart entry animation — stagger bars
+  const bars = document.querySelectorAll('.bar');
+  bars.forEach((bar, i) => {
+    const h = bar.style.height;
+    bar.style.height = '0%';
+    setTimeout(() => { bar.style.height = h; }, 200 + i * 80);
+  });
+});
+</script>
+
+</body>
+</html>

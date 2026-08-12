@@ -251,19 +251,41 @@ svg.defs { position: absolute; width: 0; height: 0; }
 }
 
 /* ── Horizontal Date Scroller ── */
+.date-scroller-wrap {
+  position: relative;
+  margin-bottom: 24px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+/* Left & right fade masks */
+.date-scroller-wrap::before,
+.date-scroller-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 32px;
+  z-index: 2;
+  pointer-events: none;
+}
+.date-scroller-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface), transparent);
+}
+.date-scroller-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface), transparent);
+}
+
 .date-scroller {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  padding: 4px 0;
-  margin-left: -24px;
-  margin-right: -24px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding: 8px 24px;
+  background: var(--surface);
+  border-radius: var(--r-lg);
 }
 .date-scroller::-webkit-scrollbar { display: none; }
 
@@ -1046,8 +1068,10 @@ svg.defs { position: absolute; width: 0; height: 0; }
       </div>
 
       <!-- Horizontal Date Scroller -->
-      <div class="date-scroller" id="dateScroller">
-        <!-- Populated by JS -->
+      <div class="date-scroller-wrap">
+        <div class="date-scroller" id="dateScroller">
+          <!-- Populated by JS -->
+        </div>
       </div>
 
       <!-- Date context info -->

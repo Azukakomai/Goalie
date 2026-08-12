@@ -102,8 +102,8 @@
       font-weight: 700;
       line-height: 1.25;
       color: var(--text-100);
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-top: 15px;
+      /* margin-bottom: 10px; */
       margin-left: 2px;
     }
 
@@ -320,29 +320,73 @@
    TASKS SCREEN
    ======================================== */
 
-    /* Greeting */
+    /* Greeting & Streak Header */
     .greeting {
-      margin-top: 4px;
-      margin-bottom: 24px;
+      margin-top: 8px;
+      margin-bottom: 20px;
     }
 
-    .greeting .subtitle {
+    .greeting-text .subtitle {
       color: var(--text-60);
       font-size: 14px;
       margin-top: 4px;
     }
 
-    .greeting .streak {
-      display: inline-flex;
+    /* Centered Duolingo style Streak Widget Container */
+    .streak-duo-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .streak-duo-badge {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      margin-top: 12px;
-      padding: 6px 14px;
-      background: rgba(255, 107, 107, 0.08);
-      border-radius: var(--r-pill);
+      justify-content: center;
+      padding: 4px 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .streak-duo-badge:hover {
+      transform: scale(1.05);
+    }
+
+    .streak-duo-flame-svg {
+      filter: drop-shadow(0 2px 8px rgba(255, 138, 0, 0.4));
+      animation: flamePulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes flamePulse {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 2px 6px rgba(255, 138, 0, 0.3));
+      }
+
+      100% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 4px 12px rgba(255, 138, 0, 0.6));
+      }
+    }
+
+    .streak-duo-num {
+      font-size: 40px;
+      font-weight: 800;
+      color: #FF8A00;
+      line-height: 1;
+      margin-top: 4px;
+      font-family: 'Inter', system-ui, sans-serif;
+      letter-spacing: -1px;
+    }
+
+    .streak-duo-lbl {
       font-size: 13px;
-      font-weight: 600;
-      color: var(--coral);
+      font-weight: 700;
+      color: #FF8A00;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
     }
 
     /* ── Horizontal Date Scroller ── */
@@ -664,12 +708,38 @@
     .task-tag {
       display: inline-block;
       margin-top: 4px;
-      padding: 2px 8px;
-      background: var(--accent-8);
+      padding: 3px 10px;
       border-radius: var(--r-sm);
       font-size: 11px;
       font-weight: 600;
+      background: var(--accent-8);
       color: var(--accent-muted);
+    }
+
+    /* Category Tag Colors */
+    .task-tag.t-daily {
+      background: rgba(107, 203, 119, 0.12);
+      color: var(--mint);
+    }
+
+    .task-tag.t-work {
+      background: rgba(77, 150, 255, 0.12);
+      color: var(--sky);
+    }
+
+    .task-tag.t-workout {
+      background: rgba(255, 107, 107, 0.12);
+      color: var(--coral);
+    }
+
+    .task-tag.t-weekly {
+      background: rgba(255, 217, 61, 0.12);
+      color: var(--amber);
+    }
+
+    .task-tag.t-special {
+      background: rgba(179, 136, 255, 0.12);
+      color: #B388FF;
     }
 
     /* Future task — dimmer, with schedule icon */
@@ -1045,7 +1115,8 @@
     }
 
     .screen-title {
-      margin-top: 4px;
+      margin-top: 10px;
+      margin-bottom: 7px;
     }
 
     .screen-title .subtitle {
@@ -1076,7 +1147,7 @@
       fill: var(--accent);
     }
 
-    /* Stat row — no borders, just raised surface */
+    /* Stat row — color-accented cards like Nutrition */
     .stats-row {
       display: flex;
       gap: 12px;
@@ -1091,18 +1162,58 @@
       box-shadow: var(--shadow-sm);
       position: relative;
       overflow: hidden;
+      border-top: 3px solid transparent;
+    }
+
+    .stat.s-blue {
+      border-top-color: var(--sky);
+      background: rgba(77, 150, 255, 0.04);
+    }
+
+    .stat.s-blue .s-val {
+      color: var(--sky);
+    }
+
+    .stat.s-blue .s-icon {
+      opacity: 0.18;
+    }
+
+    .stat.s-green {
+      border-top-color: var(--accent);
+      background: rgba(57, 211, 83, 0.04);
+    }
+
+    .stat.s-green .s-val {
+      color: var(--accent);
+    }
+
+    .stat.s-green .s-icon {
+      opacity: 0.18;
+    }
+
+    .stat.s-amber {
+      border-top-color: var(--amber);
+      background: rgba(255, 217, 61, 0.04);
+    }
+
+    .stat.s-amber .s-val {
+      color: var(--amber);
+    }
+
+    .stat.s-amber .s-icon {
+      opacity: 0.18;
     }
 
     .stat .s-icon {
       position: absolute;
       top: 12px;
       right: 12px;
-      font-size: 28px;
+      font-size: 24px;
       opacity: 0.1;
     }
 
     .stat .s-val {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
       color: var(--text-100);
       font-variant-numeric: tabular-nums;
@@ -1116,7 +1227,7 @@
       margin-top: 4px;
     }
 
-    /* Bar chart — clean, no card border */
+    /* Bar chart — clean, multi-colored bars */
     .chart-section {
       background: var(--surface);
       border-radius: var(--r-xl);
@@ -1192,6 +1303,23 @@
       transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
       cursor: pointer;
       position: relative;
+    }
+
+    .bar.b-emerald {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(57, 211, 83, 0.3);
+    }
+
+    .bar.b-sky {
+      background: var(--sky);
+    }
+
+    .bar.b-amber {
+      background: var(--amber);
+    }
+
+    .bar.b-coral {
+      background: var(--coral);
     }
 
     .bar:hover {
@@ -1552,9 +1680,26 @@
       <div id="s-tasks" class="screen active">
 
         <div class="greeting">
-          <div class="t1">Good evening! 🌙</div>
-          <!-- <div class="subtitle">Keep the momentum going</div> -->
-          <div class="streak">🔥 5 day streak</div>
+          <div class="greeting-text">
+            <div class="t1">Good evening! 🌙</div>
+            <div class="subtitle">Keep the momentum going</div>
+          </div>
+
+          <!-- Centered Duolingo-style Streak Counter Widget -->
+          <!-- <div class="streak-duo-container">
+            <div class="streak-duo-badge">
+              <svg class="streak-duo-flame-svg" width="46" height="52" viewBox="0 0 42 48" fill="none">
+                Spark at top -->
+          <!-- <path d="M21 1 C22 3 22 5 21 7 C20 5 20 3 21 1 Z" fill="#FFC107"/> -->
+          <!-- Main Outer Flame (Orange) -->
+          <!-- <path d="M21 9 C27 17 38 23 38 34 C38 43 30 48 21 48 C12 48 4 43 4 34 C4 24 12 19 15 14 C17 18 20 19 21 18 C22 16 20 11 21 9 Z" fill="#FF8A00"/> -->
+          <!-- Inner Flame Core (Yellow) -->
+          <!-- <path d="M21 25 C25 30 30 34 30 40 C30 45 26 47.5 21 47.5 C16 47.5 12 45 12 40 C12 34 17 30 18 28 C19 30 20 31 21 30 C22 28 20 26 21 25 Z" fill="#FFD54F"/>
+              </svg>
+              <div class="streak-duo-num">5</div>
+              <div class="streak-duo-lbl">day streak</div>
+            </div>
+          </div> -->
         </div>
 
         <!-- Horizontal Date Scroller -->
@@ -1601,7 +1746,7 @@
 
         <div class="screen-title">
           <div class="t1">Nutrition</div>
-          <!-- <div class="subtitle">Track your daily intake</div> -->
+          <div class="subtitle">Track your daily intake</div>
         </div>
 
         <div class="date-nav">
@@ -1746,21 +1891,26 @@
           </div>
         </div>
 
+        <!-- Color-accented Stat Cards -->
         <div class="stats-row">
-          <div class="stat"><span class="s-icon">📋</span>
+          <div class="stat s-blue">
+            <!-- <span class="s-icon">📋</span> -->
             <div class="s-val mono" data-count="42">0</div>
             <div class="s-label">Total Tasks</div>
           </div>
-          <div class="stat"><span class="s-icon">🏆</span>
+          <div class="stat s-green">
+            <!-- <span class="s-icon">🏆</span> -->
             <div class="s-val mono" data-count="34">0</div>
             <div class="s-label">Completed</div>
           </div>
-          <div class="stat"><span class="s-icon">📈</span>
+          <div class="stat s-amber">
+            <!-- <span class="s-icon">🚀</span> -->
             <div class="s-val mono" data-count="81" data-suf="%">0%</div>
             <div class="s-label">7-Day Rate</div>
           </div>
         </div>
 
+        <!-- Multi-colored Weekly Bar Chart -->
         <div class="chart-section">
           <div class="chart-head">
             <span class="t2">Weekly Performance</span>
@@ -1769,37 +1919,37 @@
           <div class="bars">
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:60%" data-tip="Mon: 3/5 (60%)"></div>
+                <div class="bar b-amber" style="height:60%" data-tip="Mon: 3/5 (60%)"></div>
               </div><span class="bar-label">Mon</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:100%" data-tip="Tue: 5/5 (100%)"></div>
+                <div class="bar b-emerald" style="height:100%" data-tip="Tue: 5/5 (100%)"></div>
               </div><span class="bar-label">Tue</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:75%" data-tip="Wed: 3/4 (75%)"></div>
+                <div class="bar b-amber" style="height:75%" data-tip="Wed: 3/4 (75%)"></div>
               </div><span class="bar-label">Wed</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:83%" data-tip="Thu: 5/6 (83%)"></div>
+                <div class="bar b-amber" style="height:83%" data-tip="Thu: 5/6 (83%)"></div>
               </div><span class="bar-label">Thu</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:50%" data-tip="Fri: 2/4 (50%)"></div>
+                <div class="bar b-coral" style="height:25%" data-tip="Fri: 1/4 (25%)"></div>
               </div><span class="bar-label">Fri</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:100%" data-tip="Sat: 4/4 (100%)"></div>
+                <div class="bar b-emerald" style="height:100%" data-tip="Sat: 4/4 (100%)"></div>
               </div><span class="bar-label">Sat</span>
             </div>
             <div class="bar-col">
               <div class="bar-wrap">
-                <div class="bar" style="height:75%" data-tip="Sun: 3/4 (75%)"></div>
+                <div class="bar b-amber" style="height:75%" data-tip="Sun: 3/4 (75%)"></div>
               </div><span class="bar-label">Sun</span>
             </div>
           </div>
@@ -2113,6 +2263,15 @@
       document.getElementById('ringFill').style.opacity = isFuture ? '0.3' : '1';
       document.getElementById('progressSection').style.opacity = isFuture ? '0.7' : '1';
 
+      // Map tag category colors
+      const tagClassMap = {
+        daily: 't-daily',
+        weekday: 't-work',
+        mwf: 't-workout',
+        weekly: 't-weekly',
+        once: 't-special'
+      };
+
       // Render task items
       list.innerHTML = '';
       tasks.forEach((t, i) => {
@@ -2123,13 +2282,15 @@
         item.className = cls;
         item.style.animationDelay = (i * 40) + 'ms';
 
+        const tagCls = tagClassMap[t.recurrence] || 't-daily';
+
         item.innerHTML = `
       <div class="check">
         <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       </div>
       <div class="task-body">
         <div class="task-name">${t.name}</div>
-        <span class="task-tag">${t.tag}</span>
+        <span class="task-tag ${tagCls}">${t.tag}</span>
       </div>
     `;
 

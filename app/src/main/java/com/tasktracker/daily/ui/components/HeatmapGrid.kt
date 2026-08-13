@@ -1,7 +1,6 @@
 package com.tasktracker.daily.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +17,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,9 +27,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tasktracker.daily.ui.theme.GlowGreen
 import com.tasktracker.daily.ui.theme.HeatmapLevel1
 import com.tasktracker.daily.ui.theme.HeatmapLevel2
 import com.tasktracker.daily.ui.theme.HeatmapLevel3
@@ -46,44 +46,49 @@ fun HeatmapGrid(
     stats: List<DayStat>,
     modifier: Modifier = Modifier
 ) {
+    val extras = LocalGoalieExtraColors.current
     var selectedStat by remember { mutableStateOf<DayStat?>(null) }
     val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
 
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = modifier.fillMaxWidth()
+    // Card container — borderless, rounded, shadow
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // ── Header ──
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "3-Month Activity Heatmap",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "3-Month Activity",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = extras.textAlpha100
                 )
                 Text(
-                    text = "Scrollable (90 Days)",
+                    text = "90 Days",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = extras.textAlpha40
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 90 Days Scrollable Grid (7 columns)
+            // ── 90 Days Grid (7 columns) ──
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp),
@@ -92,32 +97,81 @@ fun HeatmapGrid(
                 items(stats) { stat ->
                     val squareColor = getHeatmapColor(stat.level, level0Color)
                     val isSelected = selectedStat?.epochDay == stat.epochDay
+                    val hasGlow = stat.level >= 3
 
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .aspectRatio(1f)
+                            .then(
+                                if (hasGlow) {
+                                    Modifier.shadow(
+                                        4.dp,
+                                        RoundedCornerShape(6.dp),
+                                        ambientColor = GlowGreen,
+                                        spotColor = GlowGreen
+                                    )
+                                } else Modifier
+                            )
                             .clip(RoundedCornerShape(6.dp))
                             .background(squareColor)
-                            .border(
-                                width = if (isSelected) 2.dp else 0.5.dp,
-                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(6.dp)
+                            .then(
+                                if (isSelected) {
+                                    Modifier.shadow(
+                                        0.dp,
+                                        RoundedCornerShape(6.dp)
+                                    ).background(squareColor)
+                                    // Outline effect via extra background
+                                } else Modifier
                             )
                             .clickable { selectedStat = stat }
                     ) {
                         Text(
                             text = stat.date.dayOfMonth.toString(),
-                            fontSize = 10.sp,
-                            color = if (stat.level >= 3) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            fontSize = 9.sp,
+                            color = if (stat.level >= 3) Color.White else extras.textAlpha40
                         )
+
+                        // Selected outline indicator
+                        if (isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color.Transparent)
+                                    .padding(0.dp)
+                                    .then(
+                                        Modifier.shadow(0.dp, RoundedCornerShape(6.dp))
+                                    )
+                            ) {
+                                // Draw outline via border-like approach
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color.Transparent)
+                                        .padding(0.dp)
+                                ) {
+                                    // Canvas-based outline
+                                    androidx.compose.foundation.Canvas(
+                                        modifier = Modifier.matchParentSize()
+                                    ) {
+                                        drawRoundRect(
+                                            color = Color(0xFF39D353),
+                                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx()),
+                                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Selected Day Detail Box
+            // ── Selected Day Detail ──
             val activeStat = selectedStat ?: stats.lastOrNull()
             if (activeStat != null) {
                 val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
@@ -129,31 +183,40 @@ fun HeatmapGrid(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .background(Color.White.copy(alpha = 0.03f))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Text(
                         text = activeStat.date.format(dateFormatter),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = extras.textAlpha80
                     )
                     Text(
                         text = "${activeStat.completedTasks}/${activeStat.totalTasks} Done ($pctStr%)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = getHeatmapColor(activeStat.level, level0Color).takeIf { activeStat.level > 0 } ?: MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = getHeatmapColor(activeStat.level, level0Color).takeIf { activeStat.level > 0 }
+                            ?: extras.textAlpha60
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // GitHub style Legend
+            // ── Legend ──
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Less", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                Text(
+                    "Less",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extras.textAlpha40
+                )
                 Spacer(modifier = Modifier.width(6.dp))
 
                 listOf(0, 1, 2, 3, 4).forEach { level ->
@@ -167,7 +230,11 @@ fun HeatmapGrid(
                 }
 
                 Spacer(modifier = Modifier.width(3.dp))
-                Text("More", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                Text(
+                    "More",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extras.textAlpha40
+                )
             }
         }
     }

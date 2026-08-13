@@ -14,21 +14,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,11 +46,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.data.RecurrenceType
 import com.tasktracker.daily.data.Task
+import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddOrEditTaskDialog(
     taskToEdit: Task? = null,
@@ -58,6 +61,8 @@ fun AddOrEditTaskDialog(
     val context = LocalContext.current
     val today = remember { LocalDate.now() }
     val isEditing = taskToEdit != null
+    val extras = LocalGoalieExtraColors.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var selectedRecurrence by remember { mutableStateOf(taskToEdit?.let { RecurrenceType.fromString(it.recurrenceType) } ?: RecurrenceType.NONE) }
@@ -92,251 +97,235 @@ fun AddOrEditTaskDialog(
         ).show()
     }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(16.dp),
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(extras.textAlpha40.copy(alpha = 0.3f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+        ) {
             Text(
-                text = if (isEditing) "Edit Task / Goal" else "New Goal / Task",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                text = if (isEditing) "Edit Goal / Task" else "New Goal / Task",
+                style = MaterialTheme.typography.headlineMedium,
+                color = extras.textAlpha100,
                 fontWeight = FontWeight.Bold
             )
-        },
-        text = {
-            Column {
+            Text(
+                text = if (isEditing) "Modify your task details" else "What do you want to accomplish?",
+                style = MaterialTheme.typography.bodyMedium,
+                color = extras.textAlpha60
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Task title input
+            OutlinedTextField(
+                value = taskTitle,
+                onValueChange = { taskTitle = it },
+                placeholder = { Text("e.g. Read 20 pages, Morning Run...", color = extras.textAlpha40) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = extras.textAlpha100,
+                    unfocusedTextColor = extras.textAlpha100
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Date Selection Section
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = if (isEditing) "Modify your task details" else "What do you want to accomplish?",
+                    text = "START DATE",
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                    color = extras.textAlpha40,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = formattedSelectedDate,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = taskTitle,
-                    onValueChange = { taskTitle = it },
-                    placeholder = { Text("e.g. Read 20 pages, Morning Run...", color = MaterialTheme.colorScheme.tertiary) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            val isToday = selectedDate == today
+            val isTomorrow = selectedDate == today.plusDays(1)
+            val isIn2Days = selectedDate == today.plusDays(2)
+            val isCustom = !isToday && !isTomorrow && !isIn2Days
 
-                // Date Selection Section
+            // Preset Chips Row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                listOf(
+                    Triple("Today", today, isToday),
+                    Triple("Tomorrow", today.plusDays(1), isTomorrow),
+                    Triple("+2 Days", today.plusDays(2), isIn2Days)
+                ).forEach { (label, dateVal, active) ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (active) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { selectedDate = dateVal }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (active) MaterialTheme.colorScheme.onPrimary else extras.textAlpha80,
+                            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Custom Date Picker Bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isCustom) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { openDatePicker() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Start Date",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = formattedSelectedDate,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val isToday = selectedDate == today
-                val isTomorrow = selectedDate == today.plusDays(1)
-                val isIn2Days = selectedDate == today.plusDays(2)
-                val isCustom = !isToday && !isTomorrow && !isIn2Days
-
-                // Preset Chips Row (3 buttons)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Today chip
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-                            .border(1.dp, if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                            .clickable { selectedDate = today }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Today",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = "Pick Custom Date",
+                            tint = if (isCustom) MaterialTheme.colorScheme.primary else extras.textAlpha40,
+                            modifier = Modifier.size(16.dp)
                         )
-                    }
-
-                    // Tomorrow chip
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isTomorrow) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-                            .border(1.dp, if (isTomorrow) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                            .clickable { selectedDate = today.plusDays(1) }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Tomorrow",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isTomorrow) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (isTomorrow) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-
-                    // +2 Days chip
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isIn2Days) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-                            .border(1.dp, if (isIn2Days) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                            .clickable { selectedDate = today.plusDays(2) }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "+2 Days",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isIn2Days) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (isIn2Days) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Custom Date Picker Bar (Full Width)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isCustom) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.background)
-                        .border(1.dp, if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                        .clickable { openDatePicker() }
-                        .padding(horizontal = 12.dp, vertical = 10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "Pick Custom Date",
-                                tint = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (isCustom) "Custom Date: ${selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy"))}" else "Pick Specific Date...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = if (isCustom) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                        Text(
-                            text = "📅",
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Recurrence",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    RecurrenceType.values().forEach { type ->
-                        val isSelected = selectedRecurrence == type
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-                                .border(
-                                    width = 1.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable { selectedRecurrence = type }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = type.label,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                if (selectedRecurrence == RecurrenceType.CUSTOM) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Repeat every",
+                            text = if (isCustom) "Custom: ${selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy"))}" else "Pick Specific Date...",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(end = 8.dp)
+                            color = if (isCustom) MaterialTheme.colorScheme.primary else extras.textAlpha60,
+                            fontWeight = if (isCustom) FontWeight.Bold else FontWeight.Normal
                         )
-                        OutlinedTextField(
-                            value = customIntervalText,
-                            onValueChange = { input ->
-                                if (input.all { it.isDigit() } && input.length <= 3) {
-                                    customIntervalText = input
-                                }
-                            },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
+                    }
+                    Text(text = "📅", fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "RECURRENCE",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                color = extras.textAlpha40,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                RecurrenceType.values().forEach { type ->
+                    val isSelected = selectedRecurrence == type
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { selectedRecurrence = type }
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
                         Text(
-                            text = "days",
+                            text = type.label,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 8.dp)
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else extras.textAlpha80,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 }
             }
-        },
-        confirmButton = {
+
+            if (selectedRecurrence == RecurrenceType.CUSTOM) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Repeat every",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = extras.textAlpha60,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = customIntervalText,
+                        onValueChange = { input ->
+                            if (input.all { it.isDigit() } && input.length <= 3) {
+                                customIntervalText = input
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedTextColor = extras.textAlpha100,
+                            unfocusedTextColor = extras.textAlpha100
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "days",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = extras.textAlpha60,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // Full-width Confirm Button
             Button(
                 onClick = {
                     if (taskTitle.isNotBlank()) {
@@ -348,17 +337,19 @@ fun AddOrEditTaskDialog(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
-                Text(if (isEditing) "Save Changes" else "Add Task", fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = if (isEditing) "Save Changes" else "Add Goal",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    )
+    }
 }
 
 // Backwards compatibility alias for AddTaskDialog

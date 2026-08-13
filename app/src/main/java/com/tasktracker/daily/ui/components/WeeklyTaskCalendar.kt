@@ -1,7 +1,10 @@
 package com.tasktracker.daily.ui.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Today
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +33,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.data.Task
+import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -48,102 +57,106 @@ fun WeeklyTaskCalendar(
     onDeleteTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val extras = LocalGoalieExtraColors.current
     val today = remember { LocalDate.now() }
     var selectedDate by remember { mutableStateOf(today) }
-    var weekOffset by remember { mutableStateOf(0L) } // 0 = current week, -1 = last week, +1 = next week
+    var weekOffset by remember { mutableStateOf(0L) }
 
-    // Calculate current week's Monday
     val currentWeekMonday = remember(weekOffset) {
         today.plusWeeks(weekOffset).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     }
 
-    // List of 7 dates for the displayed week (Monday to Sunday)
     val weekDates = remember(currentWeekMonday) {
         (0..6).map { currentWeekMonday.plusDays(it.toLong()) }
     }
 
-    // Group tasks by dateEpochDay
     val tasksByDay = remember(allTasks) {
         allTasks.groupBy { it.dateEpochDay }
     }
 
-    // Selected day tasks
     val selectedDayTasks = remember(selectedDate, tasksByDay) {
         tasksByDay[selectedDate.toEpochDay()] ?: emptyList()
     }
 
-    val weekRangeTitle = remember(weekDates) {
-        val start = weekDates.first().format(DateTimeFormatter.ofPattern("MMM d"))
-        val end = weekDates.last().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
-        "$start - $end"
+    val weekTitle = remember(weekDates) {
+        "Week of ${weekDates.first().format(DateTimeFormatter.ofPattern("MMM d"))}"
     }
 
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = modifier.fillMaxWidth()
+    // Card container — no border, rounded, shadow
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // Header Row: Title & Navigation Controls
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // ── Header ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Weekly Schedule",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = weekRangeTitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = weekTitle,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = extras.textAlpha100
+                )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     if (weekOffset != 0L) {
                         IconButton(
                             onClick = {
                                 weekOffset = 0L
                                 selectedDate = today
                             },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(28.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Today,
                                 contentDescription = "Go to Today",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
-                    IconButton(
-                        onClick = { weekOffset -= 1 },
-                        modifier = Modifier.size(32.dp)
+                    // Navigation arrows
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { weekOffset -= 1 },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ChevronLeft,
                             contentDescription = "Previous Week",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = extras.textAlpha60,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
-                    IconButton(
-                        onClick = { weekOffset += 1 },
-                        modifier = Modifier.size(32.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { weekOffset += 1 },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = "Next Week",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = extras.textAlpha60,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -151,7 +164,7 @@ fun WeeklyTaskCalendar(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 7-Day Horizontal Calendar Strip
+            // ── 7-Day Strip with Mini Progress Rings ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -162,66 +175,81 @@ fun WeeklyTaskCalendar(
                     val dayTasks = tasksByDay[date.toEpochDay()] ?: emptyList()
                     val totalTasksCount = dayTasks.size
                     val completedTasksCount = dayTasks.count { it.isCompleted }
+                    val completionRate = if (totalTasksCount > 0) completedTasksCount.toFloat() / totalTasksCount else 0f
+
+                    // Bounce animation on selection
+                    val scale by animateFloatAsState(
+                        targetValue = if (isSelected) 1f else 1f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        ),
+                        label = "weekCellScale"
+                    )
 
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .graphicsLayer { scaleX = scale; scaleY = scale }
+                            .clip(RoundedCornerShape(16.dp))
                             .background(
                                 when {
                                     isSelected -> MaterialTheme.colorScheme.primary
-                                    isToday -> MaterialTheme.colorScheme.surfaceVariant
-                                    else -> MaterialTheme.colorScheme.background
+                                    else -> Color.Transparent
                                 }
                             )
-                            .border(
-                                width = 1.dp,
-                                color = when {
-                                    isSelected -> MaterialTheme.colorScheme.primary
-                                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                                    else -> MaterialTheme.colorScheme.outline
-                                },
-                                shape = RoundedCornerShape(12.dp)
+                            .then(
+                                if (isSelected) {
+                                    Modifier.shadow(4.dp, RoundedCornerShape(16.dp),
+                                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                } else Modifier
                             )
                             .clickable { selectedDate = date }
                             .padding(vertical = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Day Abbreviation (e.g. MON)
+                        // Day abbreviation
                         Text(
-                            text = date.format(DateTimeFormatter.ofPattern("EEE")).uppercase(),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.tertiary
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Day of Month number (e.g. 22)
-                        Text(
-                            text = "${date.dayOfMonth}",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            text = date.format(DateTimeFormatter.ofPattern("EEE")).take(3),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                            else extras.textAlpha40
                         )
 
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        // Task indicator dot/count badge
-                        if (totalTasksCount > 0) {
-                            val dotColor = when {
-                                isSelected -> MaterialTheme.colorScheme.onPrimary
-                                completedTasksCount == totalTasksCount -> MaterialTheme.colorScheme.primary
-                                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                            }
+                        // Day number
+                        Text(
+                            text = "${date.dayOfMonth}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else extras.textAlpha80
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Mini progress ring (20dp)
+                        MiniProgressRing(
+                            progress = completionRate,
+                            isSelected = isSelected,
+                            accentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.primary
+                        )
+
+                        // Today dot
+                        if (isToday) {
+                            Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
-                                    .size(6.dp)
+                                    .size(4.dp)
                                     .clip(CircleShape)
-                                    .background(dotColor)
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                        else MaterialTheme.colorScheme.primary
+                                    )
                             )
-                        } else {
-                            Spacer(modifier = Modifier.height(6.dp))
                         }
                     }
                 }
@@ -229,7 +257,7 @@ fun WeeklyTaskCalendar(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Stacked Tasks Section Header for Selected Day
+            // ── Stacked Tasks Section ──
             val selectedDateStr = selectedDate.format(DateTimeFormatter.ofPattern("EEEE, MMM d"))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -238,20 +266,23 @@ fun WeeklyTaskCalendar(
             ) {
                 Text(
                     text = "Stacked Tasks ($selectedDateStr)",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    ),
+                    color = extras.textAlpha100
                 )
                 Text(
                     text = "${selectedDayTasks.count { it.isCompleted }}/${selectedDayTasks.size} done",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // List of Stacked Task Cards for Selected Day
             if (selectedDayTasks.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -263,8 +294,8 @@ fun WeeklyTaskCalendar(
                 ) {
                     Text(
                         text = "No tasks scheduled for ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.tertiary
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = extras.textAlpha40
                     )
                 }
             } else {
@@ -279,6 +310,54 @@ fun WeeklyTaskCalendar(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Mini progress ring (20dp) for weekly calendar cells.
+ * Matches mockup's `.mini-r` SVG ring design.
+ */
+@Composable
+private fun MiniProgressRing(
+    progress: Float,
+    isSelected: Boolean,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val trackColor = if (isSelected) {
+        Color(0x40000000) // dark semi-transparent on selected
+    } else {
+        Color(0x0FF0F6FC) // very faint white on normal
+    }
+
+    Canvas(modifier = modifier.size(20.dp)) {
+        val strokeWidth = 3.dp.toPx()
+        val arcSize = Size(size.width - strokeWidth, size.height - strokeWidth)
+        val offset = Offset(strokeWidth / 2f, strokeWidth / 2f)
+
+        // Background track
+        drawArc(
+            color = trackColor,
+            startAngle = -90f,
+            sweepAngle = 360f,
+            useCenter = false,
+            topLeft = offset,
+            size = arcSize,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+
+        // Progress arc
+        if (progress > 0f) {
+            drawArc(
+                color = accentColor,
+                startAngle = -90f,
+                sweepAngle = 360f * progress,
+                useCenter = false,
+                topLeft = offset,
+                size = arcSize,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
         }
     }
 }

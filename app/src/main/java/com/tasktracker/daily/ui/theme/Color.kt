@@ -27,6 +27,28 @@ val PrimaryEmerald = Color(0xFF39D353)
 val PrimaryContainer = Color(0xFF0E4429)
 val OnPrimaryContainer = Color(0xFF7EE787)
 
+// --- Accent Colors (Semantic, used sparingly — the 10% in 60/30/10) ---
+val AccentCoral = Color(0xFFFF6B6B)    // Protein, destructive actions
+val AccentAmber = Color(0xFFFFD93D)    // Fat macro, warnings
+val AccentSky = Color(0xFF4D96FF)      // Carbs macro, informational
+val AccentMint = Color(0xFF6BCB77)     // Sugar macro, secondary green
+
+// --- Gradient & Glow ---
+val GradientStart = Color(0x1A39D353)  // Emerald @ 10% — gradient overlays on hero cards
+val GradientEnd = Color(0x0039D353)    // Emerald @ 0% — gradient fade-out
+val GlowGreen = Color(0x3339D353)      // Emerald @ 20% — glow/shadow around selected items
+
+// --- Elevated Surface (slightly lighter than DarkSurface) ---
+val CardElevatedDark = Color(0xFF1C2128)
+val CardElevatedLight = Color(0xFFFFFFFF)
+
+// --- Text Opacity Variants (matching mockup CSS text hierarchy) ---
+val TextAlpha100 = Color(0xFFF0F6FC)          // --text-100: headings
+val TextAlpha80 = Color(0xCCF0F6FC)           // --text-80: body
+val TextAlpha60 = Color(0x99F0F6FC)           // --text-60: secondary
+val TextAlpha40 = Color(0x66F0F6FC)           // --text-40: muted/hint
+val TextAlpha20 = Color(0x33F0F6FC)           // --text-20: disabled
+
 // GitHub contribution levels (0 to 4)
 val HeatmapLevel0Dark = Color(0xFF161B22) // Empty / dark
 val HeatmapLevel0Light = Color(0xFFEAECF0) // Empty / light

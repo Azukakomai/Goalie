@@ -1157,7 +1157,7 @@ fun AddOrEditGoalDialog(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var selectedMetric by remember { mutableStateOf(goalToEdit?.nutritionMetric ?: NutritionMetric.PROTEIN) }
-    var selectedOperator by remember { mutableStateOf(goalToEdit?.operator ?: GoalOperator.GREATER_THAN_OR_EQUAL) }
+    var selectedOperator by remember { mutableStateOf(goalToEdit?.goalOperator ?: GoalOperator.GREATER_EQUAL) }
     var targetValueStr by remember {
         mutableStateOf(
             goalToEdit?.let {

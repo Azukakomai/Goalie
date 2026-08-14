@@ -27,7 +27,8 @@ import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import java.text.NumberFormat
 
 /**
- * Multi-segment donut chart for Nutrition macros intake and total calories.
+ * Multi-segment connected donut chart for Nutrition intake matching the mockup's .cal-ring-wrap.
+ * Segments connect seamlessly end-to-end and leave the unconsumed portion empty on the background track.
  */
 @Composable
 fun CalorieRingChart(
@@ -37,51 +38,63 @@ fun CalorieRingChart(
     carbsGrams: Float,
     sugarGrams: Float,
     modifier: Modifier = Modifier,
+    calorieGoal: Int = 2000,
     diameter: Dp = 180.dp,
     strokeWidth: Dp = 16.dp,
     trackColor: Color = Color(0xFF21262D)
 ) {
     val extras = LocalGoalieExtraColors.current
 
-    // Convert macro grams to calorie estimation or proportional representation
-    // Protein = 4 kcal/g, Fat = 9 kcal/g, Carbs = 4 kcal/g, Sugar is part of carbs (4 kcal/g)
-    val proteinKcal = proteinGrams * 4f
-    val fatKcal = fatGrams * 9f
-    val carbsKcal = carbsGrams * 4f
-    val sugarKcal = sugarGrams * 4f
+    // Macro kcal values: Protein = 4, Fat = 9, Carbs = 4, Sugar = 4
+    val proteinKcal = (proteinGrams * 4f).coerceAtLeast(0f)
+    val fatKcal = (fatGrams * 9f).coerceAtLeast(0f)
+    val carbsKcal = (carbsGrams * 4f).coerceAtLeast(0f)
+    val sugarKcal = (sugarGrams * 4f).coerceAtLeast(0f)
 
-    val totalMacroKcal = (proteinKcal + fatKcal + carbsKcal + sugarKcal).coerceAtLeast(1f)
+    val totalMacroKcal = (proteinKcal + fatKcal + carbsKcal + sugarKcal).coerceAtLeast(0f)
 
-    val animatedProteinPct by animateFloatAsState(
-        targetValue = proteinKcal / totalMacroKcal,
+    // Base total target: use calorie goal, but expand if consumed calories exceed goal
+    val maxKcal = maxOf(calorieGoal.toFloat(), totalCalories.toFloat(), totalMacroKcal, 1f)
+
+    // Overall progress angle out of 360 degrees
+    val targetAngle = if (totalCalories > 0) {
+        (totalCalories.toFloat() / maxKcal).coerceIn(0f, 1f) * 360f
+    } else {
+        0f
+    }
+
+    val animatedTotalAngle by animateFloatAsState(
+        targetValue = targetAngle,
         animationSpec = ProgressRingSpring,
-        label = "proteinPct"
-    )
-    val animatedFatPct by animateFloatAsState(
-        targetValue = fatKcal / totalMacroKcal,
-        animationSpec = ProgressRingSpring,
-        label = "fatPct"
-    )
-    val animatedCarbsPct by animateFloatAsState(
-        targetValue = carbsKcal / totalMacroKcal,
-        animationSpec = ProgressRingSpring,
-        label = "carbsPct"
-    )
-    val animatedSugarPct by animateFloatAsState(
-        targetValue = sugarKcal / totalMacroKcal,
-        animationSpec = ProgressRingSpring,
-        label = "sugarPct"
+        label = "totalCalorieAngle"
     )
 
-    val gapDegrees = 6f
-    val activeMacroCount = listOf(proteinGrams, fatGrams, carbsGrams, sugarGrams).count { it > 0 }
-    val totalGapDegrees = gapDegrees * activeMacroCount
-    val availableDegrees = (360f - totalGapDegrees).coerceAtLeast(0f)
+    // Proportional sweeps for each connected macro segment
+    val pFraction = if (totalMacroKcal > 0) proteinKcal / totalMacroKcal else 0f
+    val fFraction = if (totalMacroKcal > 0) fatKcal / totalMacroKcal else 0f
+    val cFraction = if (totalMacroKcal > 0) carbsKcal / totalMacroKcal else 0f
+    val sFraction = if (totalMacroKcal > 0) sugarKcal / totalMacroKcal else 0f
 
-    val pSweep = availableDegrees * animatedProteinPct
-    val fSweep = availableDegrees * animatedFatPct
-    val cSweep = availableDegrees * animatedCarbsPct
-    val sSweep = availableDegrees * animatedSugarPct
+    val animatedPSweep by animateFloatAsState(
+        targetValue = animatedTotalAngle * pFraction,
+        animationSpec = ProgressRingSpring,
+        label = "pSweep"
+    )
+    val animatedFSweep by animateFloatAsState(
+        targetValue = animatedTotalAngle * fFraction,
+        animationSpec = ProgressRingSpring,
+        label = "fSweep"
+    )
+    val animatedCSweep by animateFloatAsState(
+        targetValue = animatedTotalAngle * cFraction,
+        animationSpec = ProgressRingSpring,
+        label = "cSweep"
+    )
+    val animatedSSweep by animateFloatAsState(
+        targetValue = animatedTotalAngle * sFraction,
+        animationSpec = ProgressRingSpring,
+        label = "sSweep"
+    )
 
     Box(
         contentAlignment = Alignment.Center,
@@ -92,7 +105,7 @@ fun CalorieRingChart(
             val arcSize = Size(size.width - stroke, size.height - stroke)
             val topLeft = Offset(stroke / 2f, stroke / 2f)
 
-            // Background track
+            // Background track (shows empty space / kcal left to consume)
             drawArc(
                 color = trackColor,
                 startAngle = -90f,
@@ -105,55 +118,55 @@ fun CalorieRingChart(
 
             var currentAngle = -90f
 
-            if (totalCalories > 0 && activeMacroCount > 0) {
-                // Protein Arc
-                if (proteinGrams > 0) {
+            if (totalCalories > 0 && totalMacroKcal > 0) {
+                // 1. Protein Arc (Coral)
+                if (animatedPSweep > 0f) {
                     drawArc(
                         color = AccentCoral,
                         startAngle = currentAngle,
-                        sweepAngle = pSweep,
+                        sweepAngle = animatedPSweep,
                         useCenter = false,
                         topLeft = topLeft,
                         size = arcSize,
                         style = Stroke(width = stroke, cap = StrokeCap.Round)
                     )
-                    currentAngle += pSweep + gapDegrees
+                    currentAngle += animatedPSweep
                 }
 
-                // Fat Arc
-                if (fatGrams > 0) {
+                // 2. Fat Arc (Amber) - connected directly
+                if (animatedFSweep > 0f) {
                     drawArc(
                         color = AccentAmber,
                         startAngle = currentAngle,
-                        sweepAngle = fSweep,
+                        sweepAngle = animatedFSweep,
                         useCenter = false,
                         topLeft = topLeft,
                         size = arcSize,
                         style = Stroke(width = stroke, cap = StrokeCap.Round)
                     )
-                    currentAngle += fSweep + gapDegrees
+                    currentAngle += animatedFSweep
                 }
 
-                // Carbs Arc
-                if (carbsGrams > 0) {
+                // 3. Carbs Arc (Sky) - connected directly
+                if (animatedCSweep > 0f) {
                     drawArc(
                         color = AccentSky,
                         startAngle = currentAngle,
-                        sweepAngle = cSweep,
+                        sweepAngle = animatedCSweep,
                         useCenter = false,
                         topLeft = topLeft,
                         size = arcSize,
                         style = Stroke(width = stroke, cap = StrokeCap.Round)
                     )
-                    currentAngle += cSweep + gapDegrees
+                    currentAngle += animatedCSweep
                 }
 
-                // Sugar Arc
-                if (sugarGrams > 0) {
+                // 4. Sugar Arc (Mint) - connected directly
+                if (animatedSSweep > 0f) {
                     drawArc(
                         color = AccentMint,
                         startAngle = currentAngle,
-                        sweepAngle = sSweep,
+                        sweepAngle = animatedSSweep,
                         useCenter = false,
                         topLeft = topLeft,
                         size = arcSize,
@@ -163,7 +176,7 @@ fun CalorieRingChart(
             }
         }
 
-        // Center Content
+        // Center Content matching mockup's .cal-center
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Calories",

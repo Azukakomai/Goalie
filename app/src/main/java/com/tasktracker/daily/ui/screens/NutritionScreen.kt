@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,13 +27,9 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Today
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,14 +64,12 @@ import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.NutritionMetric
 import com.tasktracker.daily.ui.components.CalorieRingChart
-import com.tasktracker.daily.ui.components.getHeatmapColor
 import com.tasktracker.daily.ui.theme.AccentAmber
 import com.tasktracker.daily.ui.theme.AccentCoral
 import com.tasktracker.daily.ui.theme.AccentMint
 import com.tasktracker.daily.ui.theme.AccentSky
 import com.tasktracker.daily.ui.theme.GlowGreen
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
-import com.tasktracker.daily.viewmodel.NutritionDayStat
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -93,7 +83,6 @@ fun NutritionScreen(
     val summary by viewModel.selectedDayMacroSummary.collectAsState()
     val meals by viewModel.mealsForSelectedDate.collectAsState()
     val goals by viewModel.goals.collectAsState()
-    val heatmapStats by viewModel.heatmap90Days.collectAsState()
 
     val extras = LocalGoalieExtraColors.current
     var showAddMealDialog by remember { mutableStateOf(false) }
@@ -208,7 +197,7 @@ fun NutritionScreen(
                                 .size(36.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.surface)
-                                .clickable { viewModel.selectDate(selectedDate.plusDays(1)) },
+                            .clickable { viewModel.selectDate(selectedDate.plusDays(1)) },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -222,12 +211,15 @@ fun NutritionScreen(
                 }
             }
 
-            // Daily Macro Summary Card with Multi-Segment Ring
+            // Daily Macro Summary Card with Connected Ring & Macro %
             item {
-                MacroSummaryCard(summary = summary)
+                MacroSummaryCard(
+                    summary = summary,
+                    goals = goals
+                )
             }
 
-            // Goal Progress Section
+            // Goal Progress Section (Mockup-style flat rows without bulky panels)
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -250,9 +242,10 @@ fun NutritionScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    if (goals.isEmpty()) {
+                    val enabledGoals = goals.filter { it.isEnabled }
+                    if (enabledGoals.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -268,8 +261,8 @@ fun NutritionScreen(
                             )
                         }
                     } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            goals.filter { it.isEnabled }.forEach { goal ->
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            enabledGoals.forEachIndexed { index, goal ->
                                 val isMet = goal.isAccomplished(
                                     totalFat = summary.totalFat,
                                     totalCarb = summary.totalCarb,
@@ -277,25 +270,17 @@ fun NutritionScreen(
                                     totalSugar = summary.totalSugar,
                                     totalKcal = summary.totalKcal
                                 )
-                                GoalConditionBadge(
+                                GoalRowItem(
                                     goal = goal,
                                     isMet = isMet,
                                     summary = summary,
-                                    onEditClick = { goalToEdit = goal }
+                                    onEditClick = { goalToEdit = goal },
+                                    showDivider = index < enabledGoals.size - 1
                                 )
                             }
                         }
                     }
                 }
-            }
-
-            // Goal Accomplishment Heatmap Card
-            item {
-                NutritionHeatmapCard(
-                    stats = heatmapStats,
-                    selectedDate = selectedDate,
-                    onDateSelected = { date -> viewModel.selectDate(date) }
-                )
             }
 
             // Logged Meals Section
@@ -450,8 +435,23 @@ fun NutritionScreen(
 
 @Composable
 fun MacroSummaryCard(
-    summary: com.tasktracker.daily.viewmodel.DayMacroSummary
+    summary: com.tasktracker.daily.viewmodel.DayMacroSummary,
+    goals: List<NutritionGoal>
 ) {
+    // Calorie goal from goals list or default 2000 kcal
+    val calorieGoal = goals.find { it.nutritionMetric == NutritionMetric.KCAL && it.isEnabled }?.targetValue?.toInt() ?: 2000
+
+    // Macro targets for % calculation (from goals or standard defaults: Protein: 130g, Fat: 65g, Carbs: 250g, Sugar: 35g)
+    val proteinTarget = goals.find { it.nutritionMetric == NutritionMetric.PROTEIN && it.isEnabled }?.targetValue ?: 130f
+    val fatTarget = goals.find { it.nutritionMetric == NutritionMetric.FAT && it.isEnabled }?.targetValue ?: 65f
+    val carbsTarget = goals.find { it.nutritionMetric == NutritionMetric.CARB && it.isEnabled }?.targetValue ?: 250f
+    val sugarTarget = goals.find { it.nutritionMetric == NutritionMetric.SUGAR && it.isEnabled }?.targetValue ?: 35f
+
+    val proteinPct = if (proteinTarget > 0) ((summary.totalProtein / proteinTarget) * 100).toInt() else 0
+    val fatPct = if (fatTarget > 0) ((summary.totalFat / fatTarget) * 100).toInt() else 0
+    val carbsPct = if (carbsTarget > 0) ((summary.totalCarb / carbsTarget) * 100).toInt() else 0
+    val sugarPct = if (sugarTarget > 0) ((summary.totalSugar / sugarTarget) * 100).toInt() else 0
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -464,13 +464,14 @@ fun MacroSummaryCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Multi-segment Calorie Donut Ring Chart
+            // Connected Calorie Donut Ring Chart with empty track for remaining kcal
             CalorieRingChart(
                 totalCalories = summary.totalKcal,
                 proteinGrams = summary.totalProtein,
                 fatGrams = summary.totalFat,
                 carbsGrams = summary.totalCarb,
                 sugarGrams = summary.totalSugar,
+                calorieGoal = calorieGoal,
                 diameter = 180.dp,
                 strokeWidth = 16.dp,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -478,7 +479,7 @@ fun MacroSummaryCard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4 Macro Pills Row
+            // 4 Macro Pills Row with % completion
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -486,24 +487,28 @@ fun MacroSummaryCard(
                 MacroPill(
                     label = "Protein",
                     valueStr = "${summary.totalProtein.toInt()}g",
+                    pctStr = "$proteinPct%",
                     color = AccentCoral,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Fat",
                     valueStr = "${summary.totalFat.toInt()}g",
+                    pctStr = "$fatPct%",
                     color = AccentAmber,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Carbs",
                     valueStr = "${summary.totalCarb.toInt()}g",
+                    pctStr = "$carbsPct%",
                     color = AccentSky,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Sugar",
                     valueStr = "${summary.totalSugar.toInt()}g",
+                    pctStr = "$sugarPct%",
                     color = AccentMint,
                     modifier = Modifier.weight(1f)
                 )
@@ -516,6 +521,7 @@ fun MacroSummaryCard(
 fun MacroPill(
     label: String,
     valueStr: String,
+    pctStr: String,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -541,181 +547,26 @@ fun MacroPill(
                 ),
                 color = LocalGoalieExtraColors.current.textAlpha100
             )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = pctStr,
+                fontSize = 11.sp,
+                color = LocalGoalieExtraColors.current.textAlpha40
+            )
         }
     }
 }
 
+/**
+ * Clean flat goal row matching the mockup's .goal-row design.
+ */
 @Composable
-fun NutritionHeatmapCard(
-    stats: List<NutritionDayStat>,
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val extras = LocalGoalieExtraColors.current
-    val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(24.dp))
-            .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(20.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = "3-Month Goal Accomplishment",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = extras.textAlpha100
-                    )
-                    Text(
-                        text = "Cell shows kcal • Greener = more goals met",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = extras.textAlpha40
-                    )
-                }
-                Text(
-                    text = "90 Days",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = extras.textAlpha40
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp),
-                userScrollEnabled = true
-            ) {
-                items(stats) { stat ->
-                    val isSelected = stat.date == selectedDate
-                    val squareColor = getHeatmapColor(stat.level, level0Color)
-                    val hasGlow = stat.level >= 3
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .then(
-                                if (hasGlow) {
-                                    Modifier.shadow(
-                                        4.dp,
-                                        RoundedCornerShape(6.dp),
-                                        ambientColor = GlowGreen,
-                                        spotColor = GlowGreen
-                                    )
-                                } else Modifier
-                            )
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(squareColor)
-                            .clickable { onDateSelected(stat.date) }
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "${stat.date.dayOfMonth}",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (stat.level >= 3) Color.White else extras.textAlpha40
-                            )
-                            if (stat.totalKcal > 0) {
-                                Text(
-                                    text = "${stat.totalKcal}",
-                                    fontSize = 8.sp,
-                                    color = if (stat.level >= 3) Color.White.copy(alpha = 0.8f) else extras.textAlpha40
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            val activeStat = stats.find { it.date == selectedDate } ?: stats.lastOrNull()
-            if (activeStat != null) {
-                val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
-                val goalsStr = if (activeStat.totalGoalsCount > 0) {
-                    "${activeStat.goalsAccomplished}/${activeStat.totalGoalsCount} Goals Met"
-                } else {
-                    "No goals set"
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.03f))
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = "${activeStat.date.format(dateFormatter)}: ${activeStat.totalKcal} kcal",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = extras.textAlpha80
-                    )
-                    Text(
-                        text = goalsStr,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = if (activeStat.goalsAccomplished > 0) MaterialTheme.colorScheme.primary else extras.textAlpha60
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("0 Goals", style = MaterialTheme.typography.labelSmall, color = extras.textAlpha40)
-                Spacer(modifier = Modifier.width(6.dp))
-
-                listOf(0, 1, 2, 3, 4).forEach { level ->
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(getHeatmapColor(level, level0Color))
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                }
-
-                Spacer(modifier = Modifier.width(3.dp))
-                Text("All Met", style = MaterialTheme.typography.labelSmall, color = extras.textAlpha40)
-            }
-        }
-    }
-}
-
-@Composable
-fun GoalConditionBadge(
+fun GoalRowItem(
     goal: NutritionGoal,
     isMet: Boolean,
     summary: com.tasktracker.daily.viewmodel.DayMacroSummary,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    showDivider: Boolean = true
 ) {
     val extras = LocalGoalieExtraColors.current
     val currentVal = when (goal.nutritionMetric) {
@@ -727,7 +578,8 @@ fun GoalConditionBadge(
     }
 
     val targetVal = goal.targetValue
-    val pct = if (targetVal > 0) (currentVal / targetVal).coerceIn(0f, 1f) else 0f
+    val pctFraction = if (targetVal > 0) (currentVal / targetVal).coerceIn(0f, 1f) else 0f
+    val pctDisplay = if (targetVal > 0) ((currentVal / targetVal) * 100).toInt() else 0
     val barColor = when (goal.nutritionMetric) {
         NutritionMetric.PROTEIN -> AccentCoral
         NutritionMetric.FAT -> AccentAmber
@@ -736,75 +588,85 @@ fun GoalConditionBadge(
         NutritionMetric.KCAL -> MaterialTheme.colorScheme.primary
     }
 
-    val formatVal = { v: Float -> if (v % 1f == 0f) v.toInt().toString() else String.format("%.1f", v) }
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(1.dp, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp)
+            .clickable { onEditClick() }
+            .padding(vertical = 10.dp)
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon in 32dp circle matching mockup .goal-icon
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isMet) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                        else AccentCoral.copy(alpha = 0.12f)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if (isMet) "✅" else "❌",
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = goal.getDisplayText(),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
-                        ),
-                        color = extras.textAlpha100
-                    )
-                }
+                Text(
+                    text = if (isMet) "✅" else "❌",
+                    fontSize = 13.sp
+                )
+            }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${formatVal(currentVal)}${goal.nutritionMetric.unit}",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = if (isMet) MaterialTheme.colorScheme.primary else AccentCoral
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Body: Goal Title and Progress Bar matching mockup .goal-body
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = goal.getDisplayText(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    ),
+                    color = extras.textAlpha100
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                // Slim Progress Bar matching mockup .goal-bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color.White.copy(alpha = 0.06f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .fillMaxWidth(pctFraction)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(if (isMet) barColor else AccentCoral)
                     )
-                    IconButton(onClick = onEditClick, modifier = Modifier.size(28.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Goal",
-                            tint = extras.textAlpha40,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // Slim progress bar matching mockup `.goal-bar`
+            // Goal percentage matching mockup .goal-pct
+            Text(
+                text = "$pctDisplay%",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                ),
+                color = if (isMet) barColor else AccentCoral
+            )
+        }
+
+        if (showDivider) {
+            Spacer(modifier = Modifier.height(10.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .fillMaxWidth(pct)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(if (isMet) barColor else AccentCoral)
-                )
-            }
+                    .height(1.dp)
+                    .background(Color.White.copy(alpha = 0.03f))
+            )
         }
     }
 }
@@ -868,6 +730,7 @@ fun MealItemCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Shows only Pro, Carb, Fat matching mockup chips (no sugar)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -875,9 +738,6 @@ fun MealItemCard(
                     MacroChip("Pro ${meal.proteinGrams.toInt()}g", AccentCoral)
                     MacroChip("Carb ${meal.carbGrams.toInt()}g", AccentSky)
                     MacroChip("Fat ${meal.fatGrams.toInt()}g", AccentAmber)
-                    if (meal.sugarGrams > 0) {
-                        MacroChip("Sugar ${meal.sugarGrams.toInt()}g", AccentMint)
-                    }
                 }
             }
 

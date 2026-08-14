@@ -191,18 +191,17 @@ fun WeeklyTaskCalendar(
                         modifier = Modifier
                             .weight(1f)
                             .graphicsLayer { scaleX = scale; scaleY = scale }
+                            .then(
+                                if (isSelected) {
+                                    Modifier.shadow(4.dp, RoundedCornerShape(16.dp))
+                                } else Modifier
+                            )
                             .clip(RoundedCornerShape(16.dp))
                             .background(
                                 when {
                                     isSelected -> MaterialTheme.colorScheme.primary
                                     else -> Color.Transparent
                                 }
-                            )
-                            .then(
-                                if (isSelected) {
-                                    Modifier.shadow(4.dp, RoundedCornerShape(16.dp),
-                                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                } else Modifier
                             )
                             .clickable { selectedDate = date }
                             .padding(vertical = 10.dp),

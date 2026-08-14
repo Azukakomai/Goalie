@@ -1,8 +1,6 @@
 package com.tasktracker.daily.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,10 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
@@ -38,8 +34,6 @@ import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -48,10 +42,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +57,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -70,7 +71,13 @@ import com.tasktracker.daily.data.GoalOperator
 import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.NutritionMetric
+import com.tasktracker.daily.ui.components.CalorieRingChart
 import com.tasktracker.daily.ui.components.getHeatmapColor
+import com.tasktracker.daily.ui.theme.AccentAmber
+import com.tasktracker.daily.ui.theme.AccentCoral
+import com.tasktracker.daily.ui.theme.AccentMint
+import com.tasktracker.daily.ui.theme.AccentSky
+import com.tasktracker.daily.ui.theme.GlowGreen
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.NutritionDayStat
 import com.tasktracker.daily.viewmodel.NutritionViewModel
@@ -88,6 +95,7 @@ fun NutritionScreen(
     val goals by viewModel.goals.collectAsState()
     val heatmapStats by viewModel.heatmap90Days.collectAsState()
 
+    val extras = LocalGoalieExtraColors.current
     var showAddMealDialog by remember { mutableStateOf(false) }
     var mealToEdit by remember { mutableStateOf<MealLog?>(null) }
     var showAddGoalDialog by remember { mutableStateOf(false) }
@@ -96,7 +104,7 @@ fun NutritionScreen(
 
     val today = LocalDate.now()
     val isToday = selectedDate == today
-    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d, yyyy")
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d")
 
     Box(
         modifier = modifier
@@ -106,8 +114,8 @@ fun NutritionScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -119,156 +127,175 @@ fun NutritionScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Nutritional Tracker",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            text = "Nutrition",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = extras.textAlpha100,
                             fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Track meals, calories & daily goals",
+                            text = "Track your daily intake",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = extras.textAlpha60
                         )
                     }
                     IconButton(
                         onClick = { showManageGoals = true },
                         modifier = Modifier
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surface)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Flag,
                             contentDescription = "Manage Goals",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
 
-            // Date Navigation Card
+            // Date Navigation Ticker
             item {
-                Card(
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .clickable { viewModel.selectDate(selectedDate.minusDays(1)) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ChevronLeft,
+                            contentDescription = "Previous Day",
+                            tint = extras.textAlpha60,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(100.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = if (isToday) "📅 Today, ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d"))}"
+                            else selectedDate.format(dateFormatter),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            ),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!isToday) {
+                            IconButton(onClick = { viewModel.selectDate(today) }, modifier = Modifier.size(36.dp)) {
+                                Icon(Icons.Default.Today, contentDescription = "Go to Today", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .clickable { viewModel.selectDate(selectedDate.plusDays(1)) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = "Next Day",
+                                tint = extras.textAlpha60,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Daily Macro Summary Card with Multi-Segment Ring
+            item {
+                MacroSummaryCard(summary = summary)
+            }
+
+            // Goal Progress Section
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { viewModel.selectDate(selectedDate.minusDays(1)) }) {
-                            Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Day", tint = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            text = "GOAL PROGRESS",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = extras.textAlpha40
+                        )
+                        TextButton(onClick = { showAddGoalDialog = true }) {
+                            Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add Goal", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                         }
+                    }
 
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (goals.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(
-                                text = if (isToday) "Today" else selectedDate.format(dateFormatter),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
+                                text = "No goal conditions set. Tap 'Add Goal' to create one.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = extras.textAlpha40
                             )
-                            if (isToday) {
-                                Text(
-                                    text = selectedDate.format(dateFormatter),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
                         }
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (!isToday) {
-                                IconButton(onClick = { viewModel.selectDate(today) }) {
-                                    Icon(Icons.Default.Today, contentDescription = "Go to Today", tint = MaterialTheme.colorScheme.primary)
-                                }
-                            }
-                            IconButton(onClick = { viewModel.selectDate(selectedDate.plusDays(1)) }) {
-                                Icon(Icons.Default.ChevronRight, contentDescription = "Next Day", tint = MaterialTheme.colorScheme.onSurface)
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            goals.filter { it.isEnabled }.forEach { goal ->
+                                val isMet = goal.isAccomplished(
+                                    totalFat = summary.totalFat,
+                                    totalCarb = summary.totalCarb,
+                                    totalProtein = summary.totalProtein,
+                                    totalSugar = summary.totalSugar,
+                                    totalKcal = summary.totalKcal
+                                )
+                                GoalConditionBadge(
+                                    goal = goal,
+                                    isMet = isMet,
+                                    summary = summary,
+                                    onEditClick = { goalToEdit = goal }
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Daily Macro Summary Card
-            item {
-                MacroSummaryCard(summary = summary, goals = goals)
-            }
-
-            // Goal accomplishment Heatmap Card
+            // Goal Accomplishment Heatmap Card
             item {
                 NutritionHeatmapCard(
                     stats = heatmapStats,
                     selectedDate = selectedDate,
                     onDateSelected = { date -> viewModel.selectDate(date) }
                 )
-            }
-
-            // Daily Goals Accomplishment Status Badges
-            item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Daily Goal Conditions",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            TextButton(onClick = { showAddGoalDialog = true }) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Add Goal", color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        if (goals.isEmpty()) {
-                            Text(
-                                text = "No goal conditions set. Tap 'Add Goal' to create one (e.g. Protein > 130g).",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                        } else {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                goals.filter { it.isEnabled }.forEach { goal ->
-                                    val isMet = goal.isAccomplished(
-                                        totalFat = summary.totalFat,
-                                        totalCarb = summary.totalCarb,
-                                        totalProtein = summary.totalProtein,
-                                        totalSugar = summary.totalSugar,
-                                        totalKcal = summary.totalKcal
-                                    )
-                                    GoalConditionBadge(
-                                        goal = goal,
-                                        isMet = isMet,
-                                        summary = summary,
-                                        onEditClick = { goalToEdit = goal }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
             }
 
             // Logged Meals Section
@@ -279,52 +306,50 @@ fun NutritionScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Logged Meals",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold
+                        text = "TODAY'S MEALS",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 1.sp
+                        ),
+                        color = extras.textAlpha40
                     )
                     Text(
                         text = "${meals.size} ${if (meals.size == 1) "meal" else "meals"}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.tertiary
+                        style = MaterialTheme.typography.labelSmall,
+                        color = extras.textAlpha40
                     )
                 }
             }
 
             if (meals.isEmpty()) {
                 item {
-                    Card(
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .shadow(2.dp, RoundedCornerShape(24.dp))
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 imageVector = Icons.Default.Restaurant,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
+                                tint = extras.textAlpha40,
                                 modifier = Modifier.size(40.dp)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "No meals logged for this day yet.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = "No meals logged for this day yet",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = extras.textAlpha80
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Tap the + button to add a meal.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
+                                text = "Tap + to add a meal",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = extras.textAlpha40
                             )
                         }
                     }
@@ -340,7 +365,7 @@ fun NutritionScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(88.dp))
             }
         }
 
@@ -349,10 +374,16 @@ fun NutritionScreen(
             onClick = { showAddMealDialog = true },
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = CircleShape,
+            shape = RoundedCornerShape(20.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(28.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    ambientColor = GlowGreen,
+                    spotColor = GlowGreen
+                )
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Meal")
         }
@@ -419,62 +450,35 @@ fun NutritionScreen(
 
 @Composable
 fun MacroSummaryCard(
-    summary: com.tasktracker.daily.viewmodel.DayMacroSummary,
-    goals: List<NutritionGoal>
+    summary: com.tasktracker.daily.viewmodel.DayMacroSummary
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 28.dp, horizontal = 24.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Daily Intake Summary",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold
+            // Multi-segment Calorie Donut Ring Chart
+            CalorieRingChart(
+                totalCalories = summary.totalKcal,
+                proteinGrams = summary.totalProtein,
+                fatGrams = summary.totalFat,
+                carbsGrams = summary.totalCarb,
+                sugarGrams = summary.totalSugar,
+                diameter = 180.dp,
+                strokeWidth = 16.dp,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Main Calories Big Display
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = "Total Calories",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = "${summary.totalKcal}",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "kcal",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 4 Macro Meters Grid
+            // 4 Macro Pills Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -482,25 +486,25 @@ fun MacroSummaryCard(
                 MacroPill(
                     label = "Protein",
                     valueStr = "${summary.totalProtein.toInt()}g",
-                    color = Color(0xFFFF6B6B),
+                    color = AccentCoral,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Fat",
                     valueStr = "${summary.totalFat.toInt()}g",
-                    color = Color(0xFFFFD93D),
+                    color = AccentAmber,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Carbs",
                     valueStr = "${summary.totalCarb.toInt()}g",
-                    color = Color(0xFF4D96FF),
+                    color = AccentSky,
                     modifier = Modifier.weight(1f)
                 )
                 MacroPill(
                     label = "Sugar",
                     valueStr = "${summary.totalSugar.toInt()}g",
-                    color = Color(0xFF6BCB77),
+                    color = AccentMint,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -517,26 +521,25 @@ fun MacroPill(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
-            .padding(vertical = 10.dp, horizontal = 8.dp),
+            .padding(vertical = 12.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.tertiary,
-                fontSize = 11.sp
+                color = color,
+                fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = valueStr,
-                style = MaterialTheme.typography.titleMedium,
-                color = color,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = LocalGoalieExtraColors.current.textAlpha100
             )
         }
     }
@@ -549,19 +552,18 @@ fun NutritionHeatmapCard(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val extras = LocalGoalieExtraColors.current
     val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
 
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = modifier.fillMaxWidth()
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -570,30 +572,30 @@ fun NutritionHeatmapCard(
                 Column {
                     Text(
                         text = "3-Month Goal Accomplishment",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = extras.textAlpha100
                     )
                     Text(
                         text = "Cell shows kcal • Greener = more goals met",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
+                        color = extras.textAlpha40
                     )
                 }
                 Text(
-                    text = "Scrollable (90 Days)",
+                    text = "90 Days",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = extras.textAlpha40
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 90-day Scrollable Grid (7 columns)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp),
@@ -602,18 +604,24 @@ fun NutritionHeatmapCard(
                 items(stats) { stat ->
                     val isSelected = stat.date == selectedDate
                     val squareColor = getHeatmapColor(stat.level, level0Color)
+                    val hasGlow = stat.level >= 3
 
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(squareColor)
-                            .border(
-                                width = if (isSelected) 2.dp else 0.5.dp,
-                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(8.dp)
+                            .then(
+                                if (hasGlow) {
+                                    Modifier.shadow(
+                                        4.dp,
+                                        RoundedCornerShape(6.dp),
+                                        ambientColor = GlowGreen,
+                                        spotColor = GlowGreen
+                                    )
+                                } else Modifier
                             )
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(squareColor)
                             .clickable { onDateSelected(stat.date) }
                     ) {
                         Column(
@@ -622,15 +630,15 @@ fun NutritionHeatmapCard(
                         ) {
                             Text(
                                 text = "${stat.date.dayOfMonth}",
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (stat.level >= 3) Color.White else MaterialTheme.colorScheme.onSurface
+                                color = if (stat.level >= 3) Color.White else extras.textAlpha40
                             )
                             if (stat.totalKcal > 0) {
                                 Text(
                                     text = "${stat.totalKcal}",
                                     fontSize = 8.sp,
-                                    color = if (stat.level >= 3) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (stat.level >= 3) Color.White.copy(alpha = 0.8f) else extras.textAlpha40
                                 )
                             }
                         }
@@ -640,7 +648,6 @@ fun NutritionHeatmapCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Selected Cell Summary Banner
             val activeStat = stats.find { it.date == selectedDate } ?: stats.lastOrNull()
             if (activeStat != null) {
                 val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
@@ -656,33 +663,34 @@ fun NutritionHeatmapCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .background(Color.White.copy(alpha = 0.03f))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Text(
                         text = "${activeStat.date.format(dateFormatter)}: ${activeStat.totalKcal} kcal",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = extras.textAlpha80
                     )
                     Text(
                         text = goalsStr,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (activeStat.goalsAccomplished > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = if (activeStat.goalsAccomplished > 0) MaterialTheme.colorScheme.primary else extras.textAlpha60
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Heatmap Legend
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("0 Goals", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                Text("0 Goals", style = MaterialTheme.typography.labelSmall, color = extras.textAlpha40)
                 Spacer(modifier = Modifier.width(6.dp))
 
                 listOf(0, 1, 2, 3, 4).forEach { level ->
@@ -696,7 +704,7 @@ fun NutritionHeatmapCard(
                 }
 
                 Spacer(modifier = Modifier.width(3.dp))
-                Text("All Goals Met", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                Text("All Met", style = MaterialTheme.typography.labelSmall, color = extras.textAlpha40)
             }
         }
     }
@@ -709,6 +717,7 @@ fun GoalConditionBadge(
     summary: com.tasktracker.daily.viewmodel.DayMacroSummary,
     onEditClick: () -> Unit
 ) {
+    val extras = LocalGoalieExtraColors.current
     val currentVal = when (goal.nutritionMetric) {
         NutritionMetric.PROTEIN -> summary.totalProtein
         NutritionMetric.FAT -> summary.totalFat
@@ -717,56 +726,83 @@ fun GoalConditionBadge(
         NutritionMetric.KCAL -> summary.totalKcal.toFloat()
     }
 
+    val targetVal = goal.targetValue
+    val pct = if (targetVal > 0) (currentVal / targetVal).coerceIn(0f, 1f) else 0f
+    val barColor = when (goal.nutritionMetric) {
+        NutritionMetric.PROTEIN -> AccentCoral
+        NutritionMetric.FAT -> AccentAmber
+        NutritionMetric.CARB -> AccentSky
+        NutritionMetric.SUGAR -> AccentMint
+        NutritionMetric.KCAL -> MaterialTheme.colorScheme.primary
+    }
+
     val formatVal = { v: Float -> if (v % 1f == 0f) v.toInt().toString() else String.format("%.1f", v) }
 
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isMet) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, if (isMet) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .shadow(1.dp, RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (isMet) "✅" else "❌",
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = goal.getDisplayText(),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        ),
+                        color = extras.textAlpha100
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "${formatVal(currentVal)}${goal.nutritionMetric.unit}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = if (isMet) MaterialTheme.colorScheme.primary else AccentCoral
+                    )
+                    IconButton(onClick = onEditClick, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Goal",
+                            tint = extras.textAlpha40,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Slim progress bar matching mockup `.goal-bar`
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(if (isMet) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Icon(
-                    imageVector = if (isMet) Icons.Default.Check else Icons.Default.Close,
-                    contentDescription = null,
-                    tint = if (isMet) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = goal.getDisplayText(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium
-            )
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "${formatVal(currentVal)}${goal.nutritionMetric.unit}",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isMet) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            IconButton(onClick = onEditClick, modifier = Modifier.size(28.dp)) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Goal",
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(16.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .fillMaxWidth(pct)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(if (isMet) barColor else AccentCoral)
                 )
             }
         }
@@ -779,53 +815,78 @@ fun MealItemCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = Modifier.fillMaxWidth()
+    val extras = LocalGoalieExtraColors.current
+
+    // Determine left accent color based on highest macro contribution
+    val accentColor = remember(meal) {
+        val pKcal = meal.proteinGrams * 4f
+        val fKcal = meal.fatGrams * 9f
+        val cKcal = meal.carbGrams * 4f
+        when {
+            pKcal >= fKcal && pKcal >= cKcal -> AccentCoral
+            cKcal >= pKcal && cKcal >= fKcal -> AccentSky
+            else -> AccentAmber
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .shadow(1.dp, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .drawBehind {
+                // 3dp left accent bar
+                drawRoundRect(
+                    color = accentColor,
+                    topLeft = Offset(0f, 10.dp.toPx()),
+                    size = Size(3.dp.toPx(), size.height - 20.dp.toPx()),
+                    cornerRadius = CornerRadius(3.dp.toPx())
+                )
+            }
+            .padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = meal.mealName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = extras.textAlpha100
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${meal.kcal} kcal",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = extras.textAlpha60
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    MacroTextBadge("P: ${meal.proteinGrams.toInt()}g", Color(0xFFFF6B6B))
-                    MacroTextBadge("F: ${meal.fatGrams.toInt()}g", Color(0xFFFFD93D))
-                    MacroTextBadge("C: ${meal.carbGrams.toInt()}g", Color(0xFF4D96FF))
+                    MacroChip("Pro ${meal.proteinGrams.toInt()}g", AccentCoral)
+                    MacroChip("Carb ${meal.carbGrams.toInt()}g", AccentSky)
+                    MacroChip("Fat ${meal.fatGrams.toInt()}g", AccentAmber)
                     if (meal.sugarGrams > 0) {
-                        MacroTextBadge("S: ${meal.sugarGrams.toInt()}g", Color(0xFF6BCB77))
+                        MacroChip("Sugar ${meal.sugarGrams.toInt()}g", AccentMint)
                     }
                 }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "${meal.kcal} kcal",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit Meal",
-                        tint = MaterialTheme.colorScheme.tertiary,
+                        tint = extras.textAlpha40,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -833,7 +894,7 @@ fun MealItemCard(
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete Meal",
-                        tint = MaterialTheme.colorScheme.tertiary,
+                        tint = extras.textAlpha40,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -843,22 +904,23 @@ fun MealItemCard(
 }
 
 @Composable
-fun MacroTextBadge(text: String, color: Color) {
+fun MacroChip(text: String, color: Color) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(color.copy(alpha = 0.15f))
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color.copy(alpha = 0.08f))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Text(
             text = text,
             fontSize = 11.sp,
             color = color,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddOrEditMealDialog(
     mealToEdit: MealLog? = null,
@@ -866,6 +928,9 @@ fun AddOrEditMealDialog(
     onSaveMeal: (name: String, fat: Float, carb: Float, protein: Float, sugar: Float, kcal: Int) -> Unit
 ) {
     val isEditing = mealToEdit != null
+    val extras = LocalGoalieExtraColors.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     var mealName by remember { mutableStateOf(mealToEdit?.mealName ?: "") }
     var fatStr by remember {
         mutableStateOf(
@@ -897,114 +962,159 @@ fun AddOrEditMealDialog(
     }
     var kcalStr by remember { mutableStateOf(mealToEdit?.kcal?.toString() ?: "") }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(extras.textAlpha40.copy(alpha = 0.3f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+        ) {
             Text(
-                text = if (isEditing) "Edit Meal" else "Add Meal",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                text = if (isEditing) "Edit Meal" else "Log New Meal",
+                style = MaterialTheme.typography.headlineMedium,
+                color = extras.textAlpha100,
                 fontWeight = FontWeight.Bold
             )
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = "Enter meal details and macro breakdown",
+                style = MaterialTheme.typography.bodyMedium,
+                color = extras.textAlpha60
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedTextField(
+                value = mealName,
+                onValueChange = { mealName = it },
+                placeholder = { Text("Meal Name (e.g. Oatmeal & Berries)", color = extras.textAlpha40) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = extras.textAlpha100,
+                    unfocusedTextColor = extras.textAlpha100
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            OutlinedTextField(
+                value = kcalStr,
+                onValueChange = { if (it.all { c -> c.isDigit() }) kcalStr = it },
+                label = { Text("Total Calories (kcal)") },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = extras.textAlpha100,
+                    unfocusedTextColor = extras.textAlpha100
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 2x2 Grid of Macro Inputs
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
-                    value = mealName,
-                    onValueChange = { mealName = it },
-                    label = { Text("Meal Name (e.g., Chicken & Rice)") },
+                    value = proteinStr,
+                    onValueChange = { proteinStr = it },
+                    label = { Text("Protein (g)", color = AccentCoral) },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.tertiary,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        focusedBorderColor = AccentCoral,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        focusedTextColor = extras.textAlpha100,
+                        unfocusedTextColor = extras.textAlpha100
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.weight(1f)
                 )
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = proteinStr,
-                        onValueChange = { proteinStr = it },
-                        label = { Text("Protein (g)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = fatStr,
-                        onValueChange = { fatStr = it },
-                        label = { Text("Fat (g)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = carbStr,
-                        onValueChange = { carbStr = it },
-                        label = { Text("Carbs (g)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = sugarStr,
-                        onValueChange = { sugarStr = it },
-                        label = { Text("Sugar (g)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
                 OutlinedTextField(
-                    value = kcalStr,
-                    onValueChange = { kcalStr = it },
-                    label = { Text("Calories (kcal)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    value = carbStr,
+                    onValueChange = { carbStr = it },
+                    label = { Text("Carbs (g)", color = AccentSky) },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        focusedBorderColor = AccentSky,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        focusedTextColor = extras.textAlpha100,
+                        unfocusedTextColor = extras.textAlpha100
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.weight(1f)
                 )
             }
-        },
-        confirmButton = {
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = fatStr,
+                    onValueChange = { fatStr = it },
+                    label = { Text("Fat (g)", color = AccentAmber) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentAmber,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        focusedTextColor = extras.textAlpha100,
+                        unfocusedTextColor = extras.textAlpha100
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = sugarStr,
+                    onValueChange = { sugarStr = it },
+                    label = { Text("Sugar (g)", color = AccentMint) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentMint,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        focusedTextColor = extras.textAlpha100,
+                        unfocusedTextColor = extras.textAlpha100
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
             Button(
                 onClick = {
                     if (mealName.isNotBlank()) {
@@ -1012,29 +1122,27 @@ fun AddOrEditMealDialog(
                         val carb = carbStr.toFloatOrNull() ?: 0f
                         val protein = proteinStr.toFloatOrNull() ?: 0f
                         val sugar = sugarStr.toFloatOrNull() ?: 0f
-                        val kcal = kcalStr.toIntOrNull() ?: 0
+                        val kcal = kcalStr.toIntOrNull() ?: ((protein * 4) + (carb * 4) + (fat * 9)).toInt()
                         onSaveMeal(mealName, fat, carb, protein, sugar, kcal)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
-                Text(if (isEditing) "Save Changes" else "Save Meal", fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = if (isEditing) "Save Meal Changes" else "Add Meal Entry",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    )
-}
-
-@Composable
-fun AddMealDialog(
-    onDismiss: () -> Unit,
-    onAddMeal: (name: String, fat: Float, carb: Float, protein: Float, sugar: Float, kcal: Int) -> Unit
-) {
-    AddOrEditMealDialog(mealToEdit = null, onDismiss = onDismiss, onSaveMeal = onAddMeal)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1045,8 +1153,11 @@ fun AddOrEditGoalDialog(
     onSaveGoal: (metric: NutritionMetric, operator: GoalOperator, targetVal: Float) -> Unit
 ) {
     val isEditing = goalToEdit != null
+    val extras = LocalGoalieExtraColors.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     var selectedMetric by remember { mutableStateOf(goalToEdit?.nutritionMetric ?: NutritionMetric.PROTEIN) }
-    var selectedOperator by remember { mutableStateOf(goalToEdit?.goalOperator ?: GoalOperator.GREATER_THAN) }
+    var selectedOperator by remember { mutableStateOf(goalToEdit?.goalOperator ?: GoalOperator.GREATER_EQUAL) }
     var targetValueStr by remember {
         mutableStateOf(
             goalToEdit?.let {
@@ -1055,142 +1166,143 @@ fun AddOrEditGoalDialog(
         )
     }
 
-    var metricExpanded by remember { mutableStateOf(false) }
-    var operatorExpanded by remember { mutableStateOf(false) }
-
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(extras.textAlpha40.copy(alpha = 0.3f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+        ) {
             Text(
-                text = if (isEditing) "Edit Goal Condition" else "Add Goal Condition",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                text = if (isEditing) "Edit Nutrition Goal" else "New Nutrition Goal",
+                style = MaterialTheme.typography.headlineMedium,
+                color = extras.textAlpha100,
                 fontWeight = FontWeight.Bold
             )
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "Condition example: Protein > 130g or Fat < 15g",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
+            Text(
+                text = "Set daily target threshold for a metric",
+                style = MaterialTheme.typography.bodyMedium,
+                color = extras.textAlpha60
+            )
 
-                // 1. Nutritional Metric Exposed Dropdown Box
-                ExposedDropdownMenuBox(
-                    expanded = metricExpanded,
-                    onExpandedChange = { metricExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = "${selectedMetric.displayName} (${selectedMetric.unit})",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Nutritional Metric") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = metricExpanded) },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Metric Selector Chips
+            Text("NUTRIENT METRIC", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp), color = extras.textAlpha40, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                NutritionMetric.values().forEach { metric ->
+                    val isSel = selectedMetric == metric
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = metricExpanded,
-                        onDismissRequest = { metricExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { selectedMetric = metric }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        NutritionMetric.values().forEach { metric ->
-                            DropdownMenuItem(
-                                text = { Text("${metric.displayName} (${metric.unit})", color = MaterialTheme.colorScheme.onSurface) },
-                                onClick = {
-                                    selectedMetric = metric
-                                    metricExpanded = false
-                                }
-                            )
-                        }
+                        Text(
+                            text = metric.displayName,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isSel) MaterialTheme.colorScheme.onPrimary else extras.textAlpha80,
+                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium
+                        )
                     }
                 }
-
-                // 2. Operator Condition Exposed Dropdown Box
-                ExposedDropdownMenuBox(
-                    expanded = operatorExpanded,
-                    onExpandedChange = { operatorExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = "${selectedOperator.symbol} (${selectedOperator.description})",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Operator Condition") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = operatorExpanded) },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = operatorExpanded,
-                        onDismissRequest = { operatorExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        GoalOperator.values().forEach { op ->
-                            DropdownMenuItem(
-                                text = { Text("${op.symbol} (${op.description})", color = MaterialTheme.colorScheme.onSurface) },
-                                onClick = {
-                                    selectedOperator = op
-                                    operatorExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Target Value Input
-                OutlinedTextField(
-                    value = targetValueStr,
-                    onValueChange = { targetValueStr = it },
-                    label = { Text("Target Amount (${selectedMetric.unit})") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
-        },
-        confirmButton = {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Operator Selector Chips
+            Text("TARGET CONDITION", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp), color = extras.textAlpha40, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                GoalOperator.values().forEach { op ->
+                    val isSel = selectedOperator == op
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { selectedOperator = op }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = op.symbol,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (isSel) MaterialTheme.colorScheme.onPrimary else extras.textAlpha80,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Target Value Input
+            OutlinedTextField(
+                value = targetValueStr,
+                onValueChange = { targetValueStr = it },
+                label = { Text("Target Amount (${selectedMetric.unit})") },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = extras.textAlpha100,
+                    unfocusedTextColor = extras.textAlpha100
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
             Button(
                 onClick = {
-                    val valFloat = targetValueStr.toFloatOrNull()
-                    if (valFloat != null) {
-                        onSaveGoal(selectedMetric, selectedOperator, valFloat)
+                    val targetVal = targetValueStr.toFloatOrNull()
+                    if (targetVal != null && targetVal > 0) {
+                        onSaveGoal(selectedMetric, selectedOperator, targetVal)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
-                Text(if (isEditing) "Save Changes" else "Add Goal", fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = if (isEditing) "Save Goal Changes" else "Add Nutrition Goal",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    )
+    }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageGoalsDialog(
     goals: List<NutritionGoal>,
@@ -1200,64 +1312,91 @@ fun ManageGoalsDialog(
     onDelete: (NutritionGoal) -> Unit,
     onAddGoalClick: () -> Unit
 ) {
-    AlertDialog(
+    val extras = LocalGoalieExtraColors.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        title = {
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(extras.textAlpha40.copy(alpha = 0.3f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Manage Daily Goals", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
-                IconButton(onClick = onAddGoalClick) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = "Manage Nutrition Goals",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = extras.textAlpha100,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(onClick = onAddGoalClick) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add Goal", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 }
             }
-        },
-        text = {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             if (goals.isEmpty()) {
-                Text("No goals configured yet.", color = MaterialTheme.colorScheme.tertiary)
+                Text(
+                    text = "No goal conditions set yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = extras.textAlpha40,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     goals.forEach { goal ->
-                        Row(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
                         ) {
-                            Text(
-                                text = goal.getDisplayText(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (goal.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.tertiary
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                TextButton(onClick = { onToggle(goal) }) {
-                                    Text(if (goal.isEnabled) "Enabled" else "Disabled", color = if (goal.isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
-                                }
-                                IconButton(onClick = { onEdit(goal) }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                                }
-                                IconButton(onClick = { onDelete(goal) }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = goal.getDisplayText(),
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = extras.textAlpha100
+                                )
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(onClick = { onEdit(goal) }, modifier = Modifier.size(32.dp)) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = extras.textAlpha40, modifier = Modifier.size(18.dp))
+                                    }
+                                    IconButton(onClick = { onDelete(goal) }, modifier = Modifier.size(32.dp)) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete Goal", tint = extras.textAlpha40, modifier = Modifier.size(18.dp))
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
-            ) {
-                Text("Done", fontWeight = FontWeight.Bold)
-            }
         }
-    )
+    }
 }

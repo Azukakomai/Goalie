@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.tasktracker.daily.data.RecurrenceType
 import com.tasktracker.daily.data.Task
 import com.tasktracker.daily.data.TaskDao
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -37,6 +39,26 @@ class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    // Selected date for the Tasks screen date carousel
+    private val _selectedDateEpochDay = MutableStateFlow(todayEpochDay)
+    val selectedDateEpochDay: StateFlow<Long> = _selectedDateEpochDay
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val selectedDateTasks: StateFlow<List<Task>> = _selectedDateEpochDay
+        .flatMapLatest { epochDay ->
+            taskDao.getTasksForDay(epochDay)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun selectDate(epochDay: Long) {
+        _selectedDateEpochDay.value = epochDay
+        syncRecurringTasksForDate(epochDay)
+    }
 
     private val start90DaysEpoch = LocalDate.now().minusDays(89).toEpochDay()
     private val endTodayEpoch = LocalDate.now().toEpochDay()

@@ -1,7 +1,6 @@
 package com.tasktracker.daily.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -28,12 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.ui.components.HeatmapGrid
 import com.tasktracker.daily.ui.components.SettingsDialog
 import com.tasktracker.daily.ui.components.WeeklyChart
 import com.tasktracker.daily.ui.components.WeeklyTaskCalendar
+import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.TaskViewModel
 
@@ -50,6 +50,7 @@ fun DashboardScreen(
     val meals by nutritionViewModel.allMeals.collectAsState()
     val goals by nutritionViewModel.goals.collectAsState()
 
+    val extras = LocalGoalieExtraColors.current
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -57,9 +58,9 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        // Top Header Row with Title and Settings Gear Icon
+        // ── Header Row ──
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -67,35 +68,37 @@ fun DashboardScreen(
         ) {
             Column {
                 Text(
-                    text = "Analytics Dashboard",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold
+                    text = "Dashboard",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = extras.textAlpha100
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Track your productivity & daily consistency",
+                    text = "Your productivity at a glance",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = extras.textAlpha60
                 )
             }
+            // Settings icon — circular surface bg, emerald icon
             IconButton(
                 onClick = { showSettingsDialog = true },
                 modifier = Modifier
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface)
-                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 7-Day Analytics Chart
+        // 7-Day Analytics Chart (stat cards + bar chart)
         WeeklyChart(stats = stats7Days)
 
         Spacer(modifier = Modifier.height(24.dp))

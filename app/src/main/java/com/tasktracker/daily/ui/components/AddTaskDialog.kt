@@ -56,6 +56,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun AddOrEditTaskDialog(
     taskToEdit: Task? = null,
+    initialDate: LocalDate = LocalDate.now(),
     onDismiss: () -> Unit,
     onConfirm: (title: String, recurrenceType: RecurrenceType, customIntervalDays: Int, startDate: LocalDate) -> Unit
 ) {
@@ -70,7 +71,7 @@ fun AddOrEditTaskDialog(
     var customIntervalText by remember { mutableStateOf(taskToEdit?.customIntervalDays?.toString() ?: "2") }
     var selectedDate by remember {
         mutableStateOf(
-            taskToEdit?.let { LocalDate.ofEpochDay(it.startDateEpochDay) } ?: today
+            taskToEdit?.let { LocalDate.ofEpochDay(it.startDateEpochDay) } ?: initialDate
         )
     }
 

@@ -32,6 +32,7 @@ val AccentCoral = Color(0xFFFF6B6B)    // Protein, destructive actions
 val AccentAmber = Color(0xFFFFD93D)    // Fat macro, warnings
 val AccentSky = Color(0xFF4D96FF)      // Carbs macro, informational
 val AccentMint = Color(0xFF6BCB77)     // Sugar macro, secondary green
+val AccentPurple = Color(0xFFB388FF)   // Today-only / special tasks
 
 // --- Gradient & Glow ---
 val GradientStart = Color(0x1A39D353)  // Emerald @ 10% — gradient overlays on hero cards

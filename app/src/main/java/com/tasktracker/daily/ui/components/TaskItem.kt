@@ -41,6 +41,7 @@ import com.tasktracker.daily.data.Task
 import com.tasktracker.daily.ui.theme.AccentAmber
 import com.tasktracker.daily.ui.theme.AccentCoral
 import com.tasktracker.daily.ui.theme.AccentMint
+import com.tasktracker.daily.ui.theme.AccentPurple
 import com.tasktracker.daily.ui.theme.AccentSky
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 
@@ -160,34 +161,35 @@ fun TaskItem(
                     color = if (isCompleted) extras.textAlpha40 else extras.textAlpha100
                 )
 
-                if (recurrenceType != RecurrenceType.NONE || isFutureStart) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        if (isFutureStart) {
-                            TagPill(
-                                text = "Starts ${startDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
-                                color = AccentSky
-                            )
-                        }
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (isFutureStart) {
+                        TagPill(
+                            text = "Starts ${startDate.format(DateTimeFormatter.ofPattern("MMM d"))}",
+                            color = AccentSky
+                        )
+                    }
 
-                        if (recurrenceType != RecurrenceType.NONE) {
-                            val labelText = if (recurrenceType == RecurrenceType.CUSTOM) {
-                                "Every ${task.customIntervalDays} days"
-                            } else {
-                                recurrenceType.label
-                            }
-                            val tagColor = when (recurrenceType) {
-                                RecurrenceType.DAILY -> AccentMint
-                                RecurrenceType.WEEKLY -> AccentAmber
-                                RecurrenceType.YEARLY -> AccentSky
-                                RecurrenceType.CUSTOM -> AccentCoral
-                                else -> AccentMint
-                            }
-                            TagPill(text = labelText, color = tagColor)
+                    if (recurrenceType != RecurrenceType.NONE) {
+                        val labelText = if (recurrenceType == RecurrenceType.CUSTOM) {
+                            "Every ${task.customIntervalDays} days"
+                        } else {
+                            recurrenceType.label
                         }
+                        val tagColor = when (recurrenceType) {
+                            RecurrenceType.DAILY -> AccentMint
+                            RecurrenceType.WEEKLY -> AccentAmber
+                            RecurrenceType.YEARLY -> AccentSky
+                            RecurrenceType.CUSTOM -> AccentCoral
+                            else -> AccentMint
+                        }
+                        TagPill(text = labelText, color = tagColor)
+                    } else if (!isFutureStart) {
+                        // One-time task for today — purple "Today only" tag
+                        TagPill(text = "Today only", color = AccentPurple)
                     }
                 }
             }

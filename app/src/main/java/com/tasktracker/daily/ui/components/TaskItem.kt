@@ -19,7 +19,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -192,6 +194,23 @@ fun TaskItem(
                         TagPill(text = "Today only", color = AccentPurple)
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Delete Task Icon Button
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Task",
+                    tint = extras.textAlpha40,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }

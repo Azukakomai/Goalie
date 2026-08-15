@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -636,13 +637,15 @@ fun GoalRowItem(
                         .clip(RoundedCornerShape(2.dp))
                         .background(Color.White.copy(alpha = 0.06f))
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .fillMaxWidth(pctFraction)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(if (isMet) barColor else AccentCoral)
-                    )
+                    if (pctFraction > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(pctFraction)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(if (isMet) barColor else AccentCoral)
+                        )
+                    }
                 }
             }
 
@@ -1202,15 +1205,24 @@ fun ManageGoalsDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Manage Nutrition Goals",
+                    text = "Nutrition Goals",
                     style = MaterialTheme.typography.headlineMedium,
                     color = extras.textAlpha100,
                     fontWeight = FontWeight.Bold
                 )
-                TextButton(onClick = onAddGoalClick) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Add Goal", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                IconButton(
+                    onClick = onAddGoalClick,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Goal",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 

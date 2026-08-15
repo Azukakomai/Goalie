@@ -137,283 +137,288 @@ fun TasksScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 24.dp,
+                end = 24.dp,
+                top = 16.dp,
+                bottom = 88.dp
+            )
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // ── Greeting Header ──
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = greeting,
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = extras.textAlpha100
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Keep the momentum going",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = extras.textAlpha60
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── Horizontal Date Carousel ──
-            val bgColor = MaterialTheme.colorScheme.background
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .drawBehind {
-                        // Left fade gradient
-                        drawRect(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    bgColor,
-                                    Color.Transparent
-                                ),
-                                startX = 0f,
-                                endX = 32.dp.toPx()
-                            ),
-                            size = androidx.compose.ui.geometry.Size(32.dp.toPx(), size.height)
-                        )
-                        // Right fade gradient
-                        drawRect(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    bgColor
-                                ),
-                                startX = size.width - 32.dp.toPx(),
-                                endX = size.width
-                            ),
-                            topLeft = Offset(size.width - 32.dp.toPx(), 0f),
-                            size = androidx.compose.ui.geometry.Size(32.dp.toPx(), size.height)
-                        )
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .horizontalScroll(scrollState)
-                        .padding(vertical = 8.dp, horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    dateChips.forEach { chip ->
-                        val isSelected = chip.epochDay == selectedEpochDay
-                        val chipIsToday = chip.offset == 0
-                        val chipIsFuture = chip.offset > 0
-
-                        Column(
-                            modifier = Modifier
-                                .width(52.dp)
-                                .then(
-                                    if (isSelected) {
-                                        Modifier.shadow(4.dp, RoundedCornerShape(16.dp))
-                                    } else Modifier
-                                )
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else Color.Transparent
-                                )
-                                .clickable { viewModel.selectDate(chip.epochDay) }
-                                .padding(vertical = 10.dp, horizontal = 0.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            // Day abbreviation (MON, TUE, etc.)
-                            Text(
-                                text = chip.dayLabel,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = when {
-                                    isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                                    else -> extras.textAlpha40
-                                }
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            // Day number
-                            Text(
-                                text = "${chip.dayNum}",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = when {
-                                    isSelected -> MaterialTheme.colorScheme.onPrimary
-                                    chipIsFuture -> extras.textAlpha40
-                                    chipIsToday -> extras.textAlpha100
-                                    else -> extras.textAlpha80
-                                }
-                            )
-
-                            // Today dot
-                            if (chipIsToday) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(4.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                            else MaterialTheme.colorScheme.primary
-                                        )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Date Context ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = dateLabel,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = extras.textAlpha60,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = if (isFuture) {
-                        "${totalCount} planned"
-                    } else if (totalCount > 0) {
-                        "$completedCount of $totalCount done"
-                    } else {
-                        "No tasks"
-                    },
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── Progress Ring Section (Hero Card) ──
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = 2.dp,
-                        shape = RoundedCornerShape(24.dp),
-                        ambientColor = MaterialTheme.colorScheme.surface,
-                        spotColor = MaterialTheme.colorScheme.surface
-                    )
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .graphicsLayer { alpha = if (isFuture) 0.7f else 1f }
-                    .padding(vertical = 32.dp, horizontal = 24.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressRing(
-                        progress = progress,
-                        diameter = 140.dp,
-                        strokeWidth = 12.dp,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        progressColor = MaterialTheme.colorScheme.primary,
-                        centerContent = {
-                            Text(
-                                text = "$completedCount/$totalCount",
-                                style = MaterialTheme.typography.headlineLarge,
-                                color = extras.textAlpha100
-                            )
-                            Text(
-                                text = "$progressPct%",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = when {
-                            totalCount == 0 && isToday -> "Add your first task to get started"
-                            totalCount == 0 -> "No tasks for $dateLabel"
-                            isFuture -> "$totalCount tasks planned"
-                            else -> "$completedCount of $totalCount tasks completed"
-                        },
+                        text = greeting,
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = extras.textAlpha100
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Keep the momentum going",
                         style = MaterialTheme.typography.bodyMedium,
                         color = extras.textAlpha60
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // ── Horizontal Date Carousel ──
+            item {
+                val bgColor = MaterialTheme.colorScheme.background
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .drawBehind {
+                            // Left fade gradient
+                            drawRect(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        bgColor,
+                                        Color.Transparent
+                                    ),
+                                    startX = 0f,
+                                    endX = 32.dp.toPx()
+                                ),
+                                size = androidx.compose.ui.geometry.Size(32.dp.toPx(), size.height)
+                            )
+                            // Right fade gradient
+                            drawRect(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        bgColor
+                                    ),
+                                    startX = size.width - 32.dp.toPx(),
+                                    endX = size.width
+                                ),
+                                topLeft = Offset(size.width - 32.dp.toPx(), 0f),
+                                size = androidx.compose.ui.geometry.Size(32.dp.toPx(), size.height)
+                            )
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .horizontalScroll(scrollState)
+                            .padding(vertical = 8.dp, horizontal = 0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        dateChips.forEach { chip ->
+                            val isSelected = chip.epochDay == selectedEpochDay
+                            val chipIsToday = chip.offset == 0
+                            val chipIsFuture = chip.offset > 0
 
-            // ── Tasks List ──
-            if (tasks.isEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .width(52.dp)
+                                    .then(
+                                        if (isSelected) {
+                                            Modifier.shadow(4.dp, RoundedCornerShape(16.dp))
+                                        } else Modifier
+                                    )
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primary
+                                        else Color.Transparent
+                                    )
+                                    .clickable { viewModel.selectDate(chip.epochDay) }
+                                    .padding(vertical = 10.dp, horizontal = 0.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Day abbreviation (MON, TUE, etc.)
+                                Text(
+                                    text = chip.dayLabel,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = when {
+                                        isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                                        else -> extras.textAlpha40
+                                    }
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                // Day number
+                                Text(
+                                    text = "${chip.dayNum}",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when {
+                                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                                        chipIsFuture -> extras.textAlpha40
+                                        chipIsToday -> extras.textAlpha100
+                                        else -> extras.textAlpha80
+                                    }
+                                )
+
+                                // Today dot
+                                if (chipIsToday) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(4.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                                else MaterialTheme.colorScheme.primary
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // ── Date Context ──
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = dateLabel,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = extras.textAlpha60,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = if (isFuture) {
+                            "${totalCount} planned"
+                        } else if (totalCount > 0) {
+                            "$completedCount of $totalCount done"
+                        } else {
+                            "No tasks"
+                        },
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // ── Progress Ring Section (Hero Card) ──
+            item {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 2.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            ambientColor = MaterialTheme.colorScheme.surface,
+                            spotColor = MaterialTheme.colorScheme.surface
+                        )
+                        .background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .graphicsLayer { alpha = if (isFuture) 0.7f else 1f }
+                        .padding(vertical = 32.dp, horizontal = 24.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = if (isToday) "All clear for today!" else "No tasks for this day",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = extras.textAlpha80
+                        CircularProgressRing(
+                            progress = progress,
+                            diameter = 140.dp,
+                            strokeWidth = 12.dp,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            progressColor = MaterialTheme.colorScheme.primary,
+                            centerContent = {
+                                Text(
+                                    text = "$completedCount/$totalCount",
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    color = extras.textAlpha100
+                                )
+                                Text(
+                                    text = "$progressPct%",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Text(
-                            text = if (isToday) "Tap + to set your first goal" else "Tap + to add a task",
+                            text = when {
+                                totalCount == 0 && isToday -> "Add your first task to get started"
+                                totalCount == 0 -> "No tasks for $dateLabel"
+                                isFuture -> "$totalCount tasks planned"
+                                else -> "$completedCount of $totalCount tasks completed"
+                            },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = extras.textAlpha40
+                            color = extras.textAlpha60
                         )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // ── Tasks List or Empty State ──
+            if (tasks.isEmpty()) {
+                item {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = if (isToday) "All clear for today!" else "No tasks for this day",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = extras.textAlpha80
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (isToday) "Tap + to set your first goal" else "Tap + to add a task",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = extras.textAlpha40
+                            )
+                        }
                     }
                 }
             } else {
                 // Section label
-                val sectionLabel = remember(selectedEpochDay, todayEpochDay) {
-                    val offset = (selectedEpochDay - todayEpochDay).toInt()
-                    when {
-                        offset == 0 -> "TODAY'S TASKS"
-                        offset == 1 -> "TOMORROW'S TASKS"
-                        offset == -1 -> "YESTERDAY'S TASKS"
-                        offset > 0 -> "PLANNED TASKS"
-                        else -> "PAST TASKS"
+                item {
+                    val sectionLabel = remember(selectedEpochDay, todayEpochDay) {
+                        val offset = (selectedEpochDay - todayEpochDay).toInt()
+                        when {
+                            offset == 0 -> "TODAY'S TASKS"
+                            offset == 1 -> "TOMORROW'S TASKS"
+                            offset == -1 -> "YESTERDAY'S TASKS"
+                            offset > 0 -> "PLANNED TASKS"
+                            else -> "PAST TASKS"
+                        }
                     }
+
+                    Text(
+                        text = sectionLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = androidx.compose.ui.unit.TextUnit(1f, androidx.compose.ui.unit.TextUnitType.Sp)
+                        ),
+                        color = extras.textAlpha40,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
                 }
 
-                Text(
-                    text = sectionLabel,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = androidx.compose.ui.unit.TextUnit(1f, androidx.compose.ui.unit.TextUnitType.Sp)
-                    ),
-                    color = extras.textAlpha40,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                LazyColumn(
-                    contentPadding = PaddingValues(bottom = 88.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    itemsIndexed(tasks, key = { _, task -> task.id }) { index, task ->
-                        Box(modifier = Modifier.staggeredAppear(index)) {
-                            TaskItem(
-                                task = task,
-                                onToggle = { viewModel.toggleTask(task) },
-                                onEdit = { taskToEdit = task },
-                                onDelete = { viewModel.deleteTask(task) }
-                            )
-                        }
+                itemsIndexed(tasks, key = { _, task -> task.id }) { index, task ->
+                    Box(modifier = Modifier.staggeredAppear(index)) {
+                        TaskItem(
+                            task = task,
+                            onToggle = { viewModel.toggleTask(task) },
+                            onEdit = { taskToEdit = task },
+                            onDelete = { viewModel.deleteTask(task) }
+                        )
                     }
                 }
             }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -138,9 +139,7 @@ private fun GoalieBottomNav(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .height(72.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { screen ->
@@ -156,54 +155,63 @@ private fun GoalieBottomNav(
                     label = "navIconScale"
                 )
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Box(
                     modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                         .clip(RoundedCornerShape(16.dp))
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
-                        ) { onItemClick(screen) }
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                        ) { onItemClick(screen) },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = screen.icon,
-                        contentDescription = screen.title,
-                        tint = if (isSelected) MaterialTheme.colorScheme.primary
-                        else extras.textAlpha40,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .graphicsLayer {
-                                scaleX = iconScale
-                                scaleY = iconScale
-                            }
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = screen.title,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = if (isSelected)
-                                androidx.compose.ui.text.font.FontWeight.SemiBold
-                            else
-                                androidx.compose.ui.text.font.FontWeight.Medium
-                        ),
-                        color = if (isSelected) MaterialTheme.colorScheme.primary
-                        else extras.textAlpha40
-                    )
-
-                    // Accent dot under active tab
-                    Spacer(modifier = Modifier.height(4.dp))
-                    if (isSelected) {
-                        Box(
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary
+                            else extras.textAlpha40,
                             modifier = Modifier
-                                .size(4.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
+                                .size(24.dp)
+                                .graphicsLayer {
+                                    scaleX = iconScale
+                                    scaleY = iconScale
+                                }
                         )
-                    } else {
+
                         Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = screen.title,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (isSelected)
+                                    androidx.compose.ui.text.font.FontWeight.SemiBold
+                                else
+                                    androidx.compose.ui.text.font.FontWeight.Medium
+                            ),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary
+                            else extras.textAlpha40
+                        )
+
+                        // Accent dot under active tab
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(
+                            modifier = Modifier.size(4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isSelected) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
                     }
                 }
             }

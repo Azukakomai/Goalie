@@ -34,7 +34,7 @@ private val DarkColorScheme = darkColorScheme(
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryEmerald,
-    onPrimary = LightBackground,
+    onPrimary = DarkBackground,
     primaryContainer = Color(0xFFD4F5DA),
     onPrimaryContainer = Color(0xFF004318),
     background = LightBackground,
@@ -63,6 +63,10 @@ val GoalieShapes = Shapes(
 @Immutable
 data class GoalieExtraColors(
     val heatmapLevel0: Color,
+    val heatmapLevel1: Color,
+    val heatmapLevel2: Color,
+    val heatmapLevel3: Color,
+    val heatmapLevel4: Color,
     val textMuted: Color,
     // Accent colors
     val accentCoral: Color,
@@ -75,7 +79,7 @@ data class GoalieExtraColors(
     val gradientEnd: Color,
     // Elevated surface
     val cardElevated: Color,
-    // Text hierarchy (opacity variants for dark theme)
+    // Text hierarchy (opacity variants)
     val textAlpha100: Color,
     val textAlpha80: Color,
     val textAlpha60: Color,
@@ -86,6 +90,10 @@ data class GoalieExtraColors(
 val LocalGoalieExtraColors = staticCompositionLocalOf {
     GoalieExtraColors(
         heatmapLevel0 = HeatmapLevel0Dark,
+        heatmapLevel1 = HeatmapLevel1Dark,
+        heatmapLevel2 = HeatmapLevel2Dark,
+        heatmapLevel3 = HeatmapLevel3Dark,
+        heatmapLevel4 = HeatmapLevel4Dark,
         textMuted = DarkTextMuted,
         accentCoral = AccentCoral,
         accentAmber = AccentAmber,
@@ -105,13 +113,23 @@ val LocalGoalieExtraColors = staticCompositionLocalOf {
 
 @Composable
 fun DailyTrackerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: AppThemeMode = AppThemeMode.DARK,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        AppThemeMode.DARK -> true
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
+
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val extraColors = if (darkTheme) {
         GoalieExtraColors(
             heatmapLevel0 = HeatmapLevel0Dark,
+            heatmapLevel1 = HeatmapLevel1Dark,
+            heatmapLevel2 = HeatmapLevel2Dark,
+            heatmapLevel3 = HeatmapLevel3Dark,
+            heatmapLevel4 = HeatmapLevel4Dark,
             textMuted = DarkTextMuted,
             accentCoral = AccentCoral,
             accentAmber = AccentAmber,
@@ -130,6 +148,10 @@ fun DailyTrackerTheme(
     } else {
         GoalieExtraColors(
             heatmapLevel0 = HeatmapLevel0Light,
+            heatmapLevel1 = HeatmapLevel1Light,
+            heatmapLevel2 = HeatmapLevel2Light,
+            heatmapLevel3 = HeatmapLevel3Light,
+            heatmapLevel4 = HeatmapLevel4Light,
             textMuted = LightTextMuted,
             accentCoral = AccentCoral,
             accentAmber = AccentAmber,

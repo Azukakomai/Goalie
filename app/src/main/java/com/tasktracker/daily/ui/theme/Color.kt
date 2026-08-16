@@ -50,10 +50,20 @@ val TextAlpha60 = Color(0x99F0F6FC)           // --text-60: secondary
 val TextAlpha40 = Color(0x66F0F6FC)           // --text-40: muted/hint
 val TextAlpha20 = Color(0x33F0F6FC)           // --text-20: disabled
 
-// GitHub contribution levels (0 to 4)
+// GitHub contribution levels - Dark (0 to 4)
 val HeatmapLevel0Dark = Color(0xFF161B22) // Empty / dark
-val HeatmapLevel0Light = Color(0xFFEAECF0) // Empty / light
 val HeatmapLevel1 = Color(0xFF0E4429)     // Darkest green (low completion)
 val HeatmapLevel2 = Color(0xFF006D32)     // Medium-dark green
 val HeatmapLevel3 = Color(0xFF26A641)     // Medium-bright green
 val HeatmapLevel4 = Color(0xFF39D353)     // Lightest / brightest green (high completion)
+val HeatmapLevel1Dark = HeatmapLevel1
+val HeatmapLevel2Dark = HeatmapLevel2
+val HeatmapLevel3Dark = HeatmapLevel3
+val HeatmapLevel4Dark = HeatmapLevel4
+
+// GitHub contribution levels - Light (0 to 4)
+val HeatmapLevel0Light = Color(0xFFEAECF0) // Empty / light
+val HeatmapLevel1Light = Color(0xFF9BE9A8) // Soft light green
+val HeatmapLevel2Light = Color(0xFF40C463) // Vibrant medium green
+val HeatmapLevel3Light = Color(0xFF30A14E) // Deep medium green
+val HeatmapLevel4Light = Color(0xFF216E39) // Deepest forest green

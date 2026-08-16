@@ -33,6 +33,7 @@ import com.tasktracker.daily.ui.components.HeatmapGrid
 import com.tasktracker.daily.ui.components.SettingsDialog
 import com.tasktracker.daily.ui.components.WeeklyChart
 import com.tasktracker.daily.ui.components.WeeklyTaskCalendar
+import com.tasktracker.daily.ui.theme.AppThemeMode
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.TaskViewModel
@@ -41,6 +42,8 @@ import com.tasktracker.daily.viewmodel.TaskViewModel
 fun DashboardScreen(
     viewModel: TaskViewModel,
     nutritionViewModel: NutritionViewModel,
+    currentThemeMode: AppThemeMode,
+    onThemeModeChange: (AppThemeMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val stats90Days by viewModel.stats90Days.collectAsState()
@@ -125,6 +128,8 @@ fun DashboardScreen(
             tasks = tasks,
             meals = meals,
             goals = goals,
+            currentThemeMode = currentThemeMode,
+            onThemeModeChange = onThemeModeChange,
             onImportData = { importedTasks, importedMeals, importedGoals ->
                 viewModel.importTasks(importedTasks)
                 nutritionViewModel.importNutrition(importedMeals, importedGoals)

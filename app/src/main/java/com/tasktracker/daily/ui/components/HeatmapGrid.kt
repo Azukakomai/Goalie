@@ -33,10 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.ui.theme.GlowGreen
-import com.tasktracker.daily.ui.theme.HeatmapLevel1
-import com.tasktracker.daily.ui.theme.HeatmapLevel2
-import com.tasktracker.daily.ui.theme.HeatmapLevel3
-import com.tasktracker.daily.ui.theme.HeatmapLevel4
+import com.tasktracker.daily.ui.theme.GoalieExtraColors
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.DayStat
 import java.time.format.DateTimeFormatter
@@ -48,7 +45,6 @@ fun HeatmapGrid(
 ) {
     val extras = LocalGoalieExtraColors.current
     var selectedStat by remember { mutableStateOf<DayStat?>(null) }
-    val level0Color = LocalGoalieExtraColors.current.heatmapLevel0
 
     // Card container — borderless, rounded, shadow
     Box(
@@ -95,7 +91,7 @@ fun HeatmapGrid(
                 userScrollEnabled = true
             ) {
                 items(stats) { stat ->
-                    val squareColor = getHeatmapColor(stat.level, level0Color)
+                    val squareColor = getHeatmapColor(stat.level, extras)
                     val isSelected = selectedStat?.epochDay == stat.epochDay
                     val hasGlow = stat.level >= 3
 
@@ -121,7 +117,6 @@ fun HeatmapGrid(
                                         0.dp,
                                         RoundedCornerShape(6.dp)
                                     ).background(squareColor)
-                                    // Outline effect via extra background
                                 } else Modifier
                             )
                             .clickable { selectedStat = stat }
@@ -144,24 +139,16 @@ fun HeatmapGrid(
                                         Modifier.shadow(0.dp, RoundedCornerShape(6.dp))
                                     )
                             ) {
-                                // Draw outline via border-like approach
-                                Box(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(Color.Transparent)
-                                        .padding(0.dp)
+                                // Canvas-based outline
+                                val primaryColor = MaterialTheme.colorScheme.primary
+                                androidx.compose.foundation.Canvas(
+                                    modifier = Modifier.matchParentSize()
                                 ) {
-                                    // Canvas-based outline
-                                    androidx.compose.foundation.Canvas(
-                                        modifier = Modifier.matchParentSize()
-                                    ) {
-                                        drawRoundRect(
-                                            color = Color(0xFF39D353),
-                                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx()),
-                                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
-                                        )
-                                    }
+                                    drawRoundRect(
+                                        color = primaryColor,
+                                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx()),
+                                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+                                    )
                                 }
                             }
                         }
@@ -183,7 +170,7 @@ fun HeatmapGrid(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.03f))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                         .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Text(
@@ -198,7 +185,7 @@ fun HeatmapGrid(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = getHeatmapColor(activeStat.level, level0Color).takeIf { activeStat.level > 0 }
+                        color = getHeatmapColor(activeStat.level, extras).takeIf { activeStat.level > 0 }
                             ?: extras.textAlpha60
                     )
                 }
@@ -224,7 +211,7 @@ fun HeatmapGrid(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(getHeatmapColor(level, level0Color))
+                            .background(getHeatmapColor(level, extras))
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }
@@ -240,12 +227,12 @@ fun HeatmapGrid(
     }
 }
 
-fun getHeatmapColor(level: Int, level0Color: Color): Color {
+fun getHeatmapColor(level: Int, extras: GoalieExtraColors): Color {
     return when (level) {
-        1 -> HeatmapLevel1
-        2 -> HeatmapLevel2
-        3 -> HeatmapLevel3
-        4 -> HeatmapLevel4
-        else -> level0Color
+        1 -> extras.heatmapLevel1
+        2 -> extras.heatmapLevel2
+        3 -> extras.heatmapLevel3
+        4 -> extras.heatmapLevel4
+        else -> extras.heatmapLevel0
     }
 }

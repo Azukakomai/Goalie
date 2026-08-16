@@ -26,7 +26,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tasktracker.daily.R
-import com.tasktracker.daily.ui.theme.DarkBackground
 import com.tasktracker.daily.ui.theme.PrimaryEmerald
 import kotlinx.coroutines.delay
 
@@ -67,7 +66,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(

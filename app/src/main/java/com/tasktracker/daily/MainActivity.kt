@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import com.tasktracker.daily.ui.navigation.AppNavigation
 import com.tasktracker.daily.ui.screens.SplashScreen
 import com.tasktracker.daily.ui.theme.DailyTrackerTheme
+import com.tasktracker.daily.ui.theme.ThemePreferences
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.NutritionViewModelFactory
 import com.tasktracker.daily.viewmodel.TaskViewModel
@@ -29,8 +30,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val themePrefs = ThemePreferences(this)
+
         setContent {
-            DailyTrackerTheme {
+            var currentThemeMode by remember { mutableStateOf(themePrefs.themeMode) }
+
+            DailyTrackerTheme(themeMode = currentThemeMode) {
                 var isLoading by remember { mutableStateOf(true) }
 
                 if (isLoading) {
@@ -38,7 +43,12 @@ class MainActivity : ComponentActivity() {
                 } else {
                     AppNavigation(
                         viewModel = viewModel,
-                        nutritionViewModel = nutritionViewModel
+                        nutritionViewModel = nutritionViewModel,
+                        currentThemeMode = currentThemeMode,
+                        onThemeModeChange = { newMode ->
+                            themePrefs.themeMode = newMode
+                            currentThemeMode = newMode
+                        }
                     )
                 }
             }

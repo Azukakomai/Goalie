@@ -635,7 +635,7 @@ fun GoalRowItem(
                         .fillMaxWidth()
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White.copy(alpha = 0.06f))
+                        .background(extras.textAlpha20.copy(alpha = 0.12f))
                 ) {
                     if (pctFraction > 0f) {
                         Box(
@@ -668,7 +668,7 @@ fun GoalRowItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color.White.copy(alpha = 0.03f))
+                    .background(extras.textAlpha20.copy(alpha = 0.08f))
             )
         }
     }

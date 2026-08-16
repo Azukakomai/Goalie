@@ -62,11 +62,16 @@ import com.tasktracker.daily.data.BackupManager
 import com.tasktracker.daily.data.MealLog
 import com.tasktracker.daily.data.NutritionGoal
 import com.tasktracker.daily.data.Task
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import com.tasktracker.daily.notifications.NotificationHelper
 import com.tasktracker.daily.notifications.NotificationPreferences
 import com.tasktracker.daily.notifications.NotificationScheduler
 import com.tasktracker.daily.ui.theme.AccentCoral
 import com.tasktracker.daily.ui.theme.AccentSky
+import com.tasktracker.daily.ui.theme.AppThemeMode
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +81,8 @@ fun SettingsDialog(
     tasks: List<Task>,
     meals: List<MealLog>,
     goals: List<NutritionGoal>,
+    currentThemeMode: AppThemeMode,
+    onThemeModeChange: (AppThemeMode) -> Unit,
     onImportData: (List<Task>, List<MealLog>, List<NutritionGoal>) -> Unit,
     onResetData: () -> Unit
 ) {
@@ -217,12 +224,72 @@ fun SettingsDialog(
                 )
             }
             Text(
-                text = "Manage notifications, data backups, or restore previous entries.",
+                text = "Manage appearance, notifications, or data backups.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = extras.textAlpha60
             )
 
-            // --- Section: Reminders ---
+            // --- Section: Appearance ---
+            Text(
+                text = "APPEARANCE",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                color = extras.textAlpha40,
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .padding(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                val themeOptions = listOf(
+                    Triple(AppThemeMode.DARK, "Dark", Icons.Default.DarkMode),
+                    Triple(AppThemeMode.LIGHT, "Light", Icons.Default.LightMode),
+                    Triple(AppThemeMode.SYSTEM, "System", Icons.Default.BrightnessAuto)
+                )
+
+                themeOptions.forEach { (mode, label, icon) ->
+                    val isSelected = currentThemeMode == mode
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else Color.Transparent
+                            )
+                            .clickable {
+                                onThemeModeChange(mode)
+                            }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else extras.textAlpha60,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                ),
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else extras.textAlpha60
+                            )
+                        }
+                    }
+                }
+            }
+
+            // --- Section: Notifications ---
             Text(
                 text = "NOTIFICATIONS",
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),

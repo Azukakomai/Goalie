@@ -44,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.tasktracker.daily.ui.screens.DashboardScreen
 import com.tasktracker.daily.ui.screens.NutritionScreen
 import com.tasktracker.daily.ui.screens.TasksScreen
+import com.tasktracker.daily.ui.theme.AppThemeMode
 import com.tasktracker.daily.ui.theme.LocalGoalieExtraColors
 import com.tasktracker.daily.viewmodel.NutritionViewModel
 import com.tasktracker.daily.viewmodel.TaskViewModel
@@ -57,7 +58,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 @Composable
 fun AppNavigation(
     viewModel: TaskViewModel,
-    nutritionViewModel: NutritionViewModel
+    nutritionViewModel: NutritionViewModel,
+    currentThemeMode: AppThemeMode,
+    onThemeModeChange: (AppThemeMode) -> Unit
 ) {
     val navController = rememberNavController()
     val items = listOf(Screen.Tasks, Screen.Nutrition, Screen.Dashboard)
@@ -98,7 +101,9 @@ fun AppNavigation(
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
                     viewModel = viewModel,
-                    nutritionViewModel = nutritionViewModel
+                    nutritionViewModel = nutritionViewModel,
+                    currentThemeMode = currentThemeMode,
+                    onThemeModeChange = onThemeModeChange
                 )
             }
         }

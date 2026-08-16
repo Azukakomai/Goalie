@@ -11,7 +11,7 @@ class NotificationReceiver : BroadcastReceiver() {
             NotificationHelper.sendGoalReminderNotification(
                 context = context,
                 title = "Goalie 🎯",
-                message = "Have you checked your goals today?"
+                message = "Check your goals today"
             )
         }
     }

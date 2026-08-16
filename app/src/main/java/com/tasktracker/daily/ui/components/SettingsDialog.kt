@@ -261,7 +261,7 @@ fun SettingsDialog(
                                 color = extras.textAlpha100
                             )
                             Text(
-                                text = "\"Have you checked your goals today?\"",
+                                text = "\"Check your goals today\"",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = extras.textAlpha60
                             )
@@ -341,7 +341,7 @@ fun SettingsDialog(
                                 NotificationHelper.sendGoalReminderNotification(
                                     context = context,
                                     title = "Goalie 🎯",
-                                    message = "Have you checked your goals today?"
+                                    message = "Check your goals today"
                                 )
                                 Toast.makeText(context, "Test notification sent!", Toast.LENGTH_SHORT).show()
                             }

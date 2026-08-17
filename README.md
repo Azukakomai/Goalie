@@ -1,130 +1,146 @@
-# 📱 Daily Tracker — Android App
+# ⚡ Goalie — Daily Productivity & Nutrition Tracking App
 
-A native Android daily task management and habit consistency tracking app built with **Kotlin** and **Jetpack Compose**. Featuring a 7-day performance dashboard and a 30-day **GitHub-style contribution heatmap grid** where cell color intensity scales dynamically with daily task completion rates.
+<p align="center">
+  <img src="docs/cover.png" alt="Goalie Productivity App Cover" width="100%" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+</p>
+
+<p align="center">
+  <a href="#-tech-stack"><img src="https://img.shields.io/badge/Kotlin-2.1.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" /></a>
+  <a href="#-tech-stack"><img src="https://img.shields.io/badge/Jetpack_Compose-2024.12-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose" /></a>
+  <a href="#-tech-stack"><img src="https://img.shields.io/badge/Material_3-Material_You-34A853?style=for-the-badge&logo=android&logoColor=white" alt="Material 3" /></a>
+  <a href="#-tech-stack"><img src="https://img.shields.io/badge/Room_DB-SQLite_Offline-FF6D00?style=for-the-badge&logo=sqlite&logoColor=white" alt="Room DB" /></a>
+  <a href="#-presentation-cover-deck"><img src="https://img.shields.io/badge/Web_Presentation-Cover_Deck-EC4899?style=for-the-badge&logo=html5&logoColor=white" alt="Web Cover" /></a>
+</p>
+
+<p align="center">
+  <b>Goalie</b> is a native, modern, offline-first Android productivity and health companion. Built entirely with <b>Kotlin</b> and <b>Jetpack Compose</b>, Goalie harmoniously bridges daily task momentum, macro-nutrient intake targets, and weekly performance analytics in a fast, fluid, and delightful UI.
+</p>
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Key Features
 
-| Component | Technology | Description |
+### 1. 📅 Daily Tasks & Momentum (`TasksScreen`)
+- **Daily Progress Ring**: Instant circular completion gauge with completed task ratio (e.g. `3/4 • 75%`).
+- **Interactive Calendar Ribbon**: Horizontally scrollable 7-day strip with real-time day status indicators.
+- **Dynamic Task Management**: Add, complete, and delete tasks with smooth animations, strikethrough transitions, and priority tagging (Daily, Today Only, etc.).
+- **Smart Notifications**: Scheduled daily reminders and momentum checks via Android `AlarmManager` and `NotificationHelper`.
+
+### 2. 🥗 Macro-Nutrient & Calorie Tracker (`NutritionScreen`)
+- **Multi-Segment Calorie Ring (`CalorieRingChart`)**: Visual breakdown of daily calorie budget (`kcal`) segmented by macronutrients.
+- **Macro Target Cards**: Real-time tracking and percentage calculations for **Protein**, **Fat**, **Carbs**, and **Sugar**.
+- **Goal Progress Bars**: Color-coded progress indicators with dynamic threshold warnings (e.g., `Protein > 130g`, `Fat < 59g`).
+- **Quick Logging**: Floating action button modal to log meals, snacks, and nutrition metrics on the go.
+
+### 3. 📊 Productivity & Consistency Dashboard (`DashboardScreen`)
+- **High-Level KPI Summary**: Instant cards displaying **Total Tasks**, **Completed Tasks**, and **7-Day Consistency Rate (%)**.
+- **Weekly Performance Bar Chart (`WeeklyChart`)**: Day-by-day bar chart showing momentum peaks throughout the week.
+- **30-Day Contribution Heatmap Grid (`HeatmapGrid`)**: GitHub-style activity grid where cell color intensity dynamically scales with daily completion rates (Level 0 through Level 4 Emerald).
+- **Stacked Tasks Timeline**: Grouped historical task breakdown by date with quick inspection.
+
+### 4. 🎨 Interactive Web Presentation Cover (`cover/`)
+- High-fidelity **3D iPhone presentation mockup** showcase designed in HTML/CSS/JS.
+- **Customizable**: Live editable titles, theme switcher (Studio, Dark Pro, Emerald, Mesh), layout modes (3D Fan, Spread, Flat, Isometric), and draggable/rotatable badges.
+- **1-Click Export**: High-resolution 2x Retina PNG export and clipboard copy ready for Dribbble, Behance, and pitch decks.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+| Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Language** | **Kotlin** (v2.1.0) | Modern, concise, type-safe programming language for Android |
-| **UI Toolkit** | **Jetpack Compose** (v2024.12) | Android's modern declarative UI framework |
-| **Design System** | **Material 3 (Material You)** | Dark theme UI with custom GitHub Emerald color palette |
-| **Database** | **Room** (v2.6.1) | SQLite object mapping library for offline-first data persistence |
-| **Architecture** | **MVVM + Clean Architecture** | ViewModel, StateFlow, Coroutines, and DAO separation |
-| **Navigation** | **Compose Navigation** (v2.8.5) | Single-activity bottom navigation routing |
-| **Build System** | **Gradle** (v8.11.1) | Dependency catalog via `libs.versions.toml` |
+| **Language** | **Kotlin 2.1.0** | Modern, type-safe, expressive Android development |
+| **UI Toolkit** | **Jetpack Compose (v2024.12)** | Declarative UI framework with fluid animations |
+| **Design System** | **Material 3 (Material You)** | Adaptive themes, soft typography, dynamic color tokens |
+| **Architecture** | **MVVM + Clean Architecture** | Unidirectional Data Flow (UDF), ViewModel & StateFlow |
+| **Database** | **Room 2.6.1 + SQLite** | Offline-first, fast local storage for tasks & nutrition data |
+| **Concurrency** | **Kotlin Coroutines & Flow** | Asynchronous non-blocking database queries & state streams |
+| **Navigation** | **Compose Navigation 2.8.5** | Single-Activity bottom navigation with smooth transitions |
+| **Reminders** | **AlarmManager + BroadcastReceiver**| Persistent daily notifications & reboot scheduling |
+| **Build System** | **Gradle 8.11.1** | Modern version catalogs (`libs.versions.toml`) |
 
 ---
 
-## ✨ Features & Concepts
-
-### 1. Today's Tasks Screen (`TasksScreen`)
-- **Daily Goal Tracker**: Visual linear progress bar showing completed tasks out of total daily tasks.
-- **Add Tasks**: Modal dialog to add custom daily tasks.
-- **Interactive Checklist**: Checkmark toggle with smooth text strikethrough and background color animation.
-- **Task Deletion**: One-tap delete icon per task.
-- **Sample Data Seeder**: Tap the ✨ icon to generate 30 days of randomized historical task data for testing analytics instantly.
-
-### 2. 7-Day Performance Dashboard (`DashboardScreen` & `WeeklyChart`)
-- **Overview Stat Cards**: Total tasks count, completed tasks count, and average 7-day completion rate %.
-- **Daily Progress Bars**: Bar visualization for each of the last 7 days displaying exact completion ratios (e.g. `3/4`).
-
-### 3. 30-Day Contribution Heatmap Grid (`HeatmapGrid`)
-- Inspired by GitHub's contribution graph, condensed into a 30-square monthly grid.
-- **5 Dynamic Color Levels**:
-  - **Level 0 (Dark Surface `#161B22`)**: 0 tasks created / 0 completed.
-  - **Level 1 (Darkest Emerald `#0E4429`)**: 1%–25% completed (e.g., 1 out of 4 tasks done).
-  - **Level 2 (Medium Emerald `#006D32`)**: 26%–50% completed (e.g., 2 out of 4 tasks done).
-  - **Level 3 (Bright Emerald `#26A641`)**: 51%–75% completed (e.g., 3 out of 4 tasks done).
-  - **Level 4 (Neon Emerald `#39D353`)**: 76%–100% completed (e.g., 4 out of 4 tasks done).
-- **Interactive Day Inspector**: Tapping any square highlights the date and displays exact stats (e.g. `Thu, Jul 16: 3/4 Done (75%)`).
-- **Visual Legend**: GitHub-style `Less [■][■][■][■][■] More` scale indicator.
-
----
-
-## 📂 Project Structure
+## 📂 Project Directory Structure
 
 ```
-New folder/
-├── README.md
-├── build.gradle.kts                   # Root Gradle build configuration
-├── settings.gradle.kts                # Project & plugin repositories setup
-├── gradle.properties                  # JVM & AndroidX settings
-├── gradle/
-│   ├── libs.versions.toml             # Centralized version catalog
-│   └── wrapper/
-│       └── gradle-wrapper.properties
+Goalie/
+├── docs/
+│   ├── cover.png                        # Presentation showcase cover image
+│   └── ui_redesign.md                   # UI/UX design specifications
+├── cover/
+│   ├── index.html                       # 3D interactive web presentation cover
+│   ├── assets.js                        # Offline Base64 asset bundle
+│   └── assets/                          # Raw screen mockups & references
+├── mockup/
+│   └── index.html                       # Interactive UI prototype
 └── app/
-    ├── build.gradle.kts               # App module dependencies & SDK config
+    ├── build.gradle.kts
     └── src/main/
-        ├── AndroidManifest.xml        # App declaration & theme bindings
+        ├── AndroidManifest.xml
         └── java/com/tasktracker/daily/
-            ├── MainActivity.kt        # Main Activity & Jetpack Compose host
-            ├── DailyTrackerApp.kt     # Application class initializing Room DB
-            ├── data/
-            │   ├── Task.kt            # Room DB Entity (id, title, isCompleted, dateEpochDay)
-            │   ├── TaskDao.kt         # SQL Queries & Flows for task filtering
-            │   └── AppDatabase.kt     # Room Database Singleton
-            ├── viewmodel/
-            │   └── TaskViewModel.kt   # StateFlow management & 30-day heatmap logic
-            ├── ui/
-            │   ├── theme/
-            │   │   ├── Color.kt       # Emerald heatmap palette
-            │   │   ├── Type.kt        # Material 3 typography
-            │   │   └── Theme.kt       # Dark Theme definition
-            │   ├── components/
-            │   │   ├── TaskItem.kt
-            │   │   ├── AddTaskDialog.kt
-            │   │   ├── HeatmapGrid.kt
-            │   │   └── WeeklyChart.kt
-            │   ├── screens/
-            │   │   ├── TasksScreen.kt
-            │   │   └── DashboardScreen.kt
-            │   └── navigation/
-            │       └── AppNavigation.kt # Bottom Navigation Bar & NavHost
+            ├── MainActivity.kt          # Host Activity for Compose UI
+            ├── DailyTrackerApp.kt       # Application class & Room DB singleton
+            ├── data/                    # Room DB Entities, DAOs & Backup
+            │   ├── AppDatabase.kt
+            │   ├── Task.kt
+            │   ├── TaskDao.kt
+            │   ├── Nutrition.kt
+            │   ├── NutritionDao.kt
+            │   └── BackupManager.kt
+            ├── viewmodel/               # MVVM ViewModels
+            │   ├── TaskViewModel.kt
+            │   └── NutritionViewModel.kt
+            ├── notifications/           # Reminders & Alarm Scheduling
+            │   ├── NotificationHelper.kt
+            │   ├── NotificationScheduler.kt
+            │   ├── NotificationReceiver.kt
+            │   └── BootReceiver.kt
+            └── ui/
+                ├── theme/               # Color palette, Type & Theme system
+                ├── components/          # Reusable Compose Widgets
+                │   ├── CalorieRingChart.kt
+                │   ├── CircularProgressRing.kt
+                │   ├── HeatmapGrid.kt
+                │   ├── WeeklyChart.kt
+                │   ├── WeeklyTaskCalendar.kt
+                │   ├── TaskItem.kt
+                │   └── AddTaskDialog.kt
+                ├── screens/             # Main Destination Screens
+                │   ├── SplashScreen.kt
+                │   ├── TasksScreen.kt
+                │   ├── NutritionScreen.kt
+                │   └── DashboardScreen.kt
+                └── navigation/
+                    └── AppNavigation.kt # Bottom Navigation & NavHost
 ```
 
 ---
 
-## 📲 How to Preview & Install
+## 🚀 Getting Started
 
-### Method 1: Using Android Studio (Recommended)
+### Prerequisites
+- **Android Studio Ladybug (2024.2+)** or newer
+- **JDK 17** or **JDK 21**
+- Android SDK **API 26+** (Android 8.0 Oreo minimum, Target API 35)
 
-1. Open **Android Studio**.
-2. Click **File → Open** (or **Open** from welcome screen) and select:
-   `c:\Users\User\OneDrive\Documents\Programming\Budgt\New folder`
-3. Wait a few moments for Gradle to sync dependencies.
-4. **To Preview on Emulator**:
-   - Select an Android Virtual Device (AVD) from the top device dropdown.
-   - Click the green **Run ▶** button (or press `Shift + F10`).
-5. **To Install on Your Android Phone**:
-   - Enable **Developer Options** and **USB Debugging** on your Android phone.
-   - Connect your phone to your PC via USB cable.
-   - Select your phone from the device dropdown in Android Studio.
-   - Click **Run ▶** — the app will compile, transfer, and open automatically on your phone!
-
----
-
-### Method 2: Generate APK to Install Manually on Phone
-
-If you prefer installing via APK file directly on your Android phone:
-
-1. Open terminal in the project directory (`New folder`):
-   ```powershell
-   gradlew assembleDebug
+### Running on Android Device / Emulator
+1. Clone or open the repository in **Android Studio**:
+   ```bash
+   git clone https://github.com/Azukakomai/Goalie.git
    ```
-2. Once complete, your APK file will be generated at:
-   `app/build/outputs/apk/debug/app-debug.apk`
-3. Transfer `app-debug.apk` to your phone (via USB cable, Google Drive, WhatsApp, or Telegram).
-4. Tap the APK file on your phone to install it! (Allow "Install from unknown sources" if prompted).
+2. Let Gradle sync dependencies.
+3. Select your target device or Android Virtual Device (AVD).
+4. Click **Run (`Shift + F10`)**.
+
+### Launching the Interactive Web Cover
+To preview or export custom presentation shots of the app:
+```powershell
+start cover\index.html
+```
+*Or open `cover/index.html` directly in any web browser.*
 
 ---
 
-### Method 3: Direct Install via ADB Command Line
-
-If your phone is connected via USB and ADB is installed:
-```powershell
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
+## 📄 License
+This project is open-source and available under the [MIT License](LICENSE).

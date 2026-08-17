@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tasktracker.daily.ui.theme.AccentAmber
 import com.tasktracker.daily.ui.theme.AccentCoral
 import com.tasktracker.daily.ui.theme.AccentSky
@@ -189,7 +190,8 @@ fun WeeklyChart(
 
 /**
  * Color-accented stat card matching mockup `.stat` design.
- * Top 3dp colored border, faint tinted background, animated counter.
+ * Solid surface base to eliminate shadow bleed-through, top 3dp colored border,
+ * faint tinted gradient overlay, and animated counter.
  */
 @Composable
 private fun StatCard(
@@ -204,13 +206,19 @@ private fun StatCard(
 
     Box(
         modifier = modifier
-            .shadow(2.dp, RoundedCornerShape(20.dp))
+            .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(20.dp),
+                ambientColor = Color.Black.copy(alpha = 0.25f),
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
             .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        accentColor.copy(alpha = 0.04f),
-                        MaterialTheme.colorScheme.surface
+                        accentColor.copy(alpha = 0.08f),
+                        Color.Transparent
                     )
                 )
             )
@@ -227,20 +235,25 @@ private fun StatCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 12.dp, start = 12.dp, end = 12.dp),
+                .padding(top = 18.dp, bottom = 14.dp, start = 8.dp, end = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "$animatedValue$suffix",
-                style = MaterialTheme.typography.headlineMedium,
-                color = accentColor,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                ),
+                color = accentColor
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = extras.textAlpha40
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 11.sp
+                ),
+                color = extras.textAlpha40,
+                maxLines = 1
             )
         }
     }

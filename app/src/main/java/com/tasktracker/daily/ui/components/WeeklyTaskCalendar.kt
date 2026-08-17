@@ -193,7 +193,12 @@ fun WeeklyTaskCalendar(
                             .graphicsLayer { scaleX = scale; scaleY = scale }
                             .then(
                                 if (isSelected) {
-                                    Modifier.shadow(4.dp, RoundedCornerShape(16.dp))
+                                    Modifier.shadow(
+                                        elevation = 4.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                                    )
                                 } else Modifier
                             )
                             .clip(RoundedCornerShape(16.dp))
@@ -212,7 +217,7 @@ fun WeeklyTaskCalendar(
                             text = date.format(DateTimeFormatter.ofPattern("EEE")).take(3),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                             else extras.textAlpha40
                         )
 
@@ -315,7 +320,8 @@ fun WeeklyTaskCalendar(
 
 /**
  * Mini progress ring (20dp) for weekly calendar cells.
- * Matches mockup's `.mini-r` SVG ring design.
+ * Matches mockup's `.mini-r` SVG ring design with smooth animation
+ * and clean track/arc rendering.
  */
 @Composable
 private fun MiniProgressRing(
@@ -324,36 +330,50 @@ private fun MiniProgressRing(
     accentColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val extras = LocalGoalieExtraColors.current
     val trackColor = if (isSelected) {
-        Color(0x40000000) // dark semi-transparent on selected
+        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
     } else {
-        Color(0x0FF0F6FC) // very faint white on normal
+        extras.textAlpha20
     }
 
-    Canvas(modifier = modifier.size(20.dp)) {
-        val strokeWidth = 3.dp.toPx()
-        val arcSize = Size(size.width - strokeWidth, size.height - strokeWidth)
-        val offset = Offset(strokeWidth / 2f, strokeWidth / 2f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = ProgressRingSpring,
+        label = "miniRingProgress"
+    )
 
-        // Background track
-        drawArc(
+    Canvas(modifier = modifier.size(20.dp)) {
+        val strokeWidth = 2.5.dp.toPx()
+        val radius = (size.minDimension - strokeWidth) / 2f
+        val centerOffset = Offset(size.width / 2f, size.height / 2f)
+        val arcSize = Size(radius * 2, radius * 2)
+        val topLeft = Offset(centerOffset.x - radius, centerOffset.y - radius)
+
+        // Background track - uniform complete circle
+        drawCircle(
             color = trackColor,
-            startAngle = -90f,
-            sweepAngle = 360f,
-            useCenter = false,
-            topLeft = offset,
-            size = arcSize,
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            radius = radius,
+            center = centerOffset,
+            style = Stroke(width = strokeWidth)
         )
 
         // Progress arc
-        if (progress > 0f) {
+        if (animatedProgress >= 0.999f) {
+            // Complete circle without round-cap seam artifact
+            drawCircle(
+                color = accentColor,
+                radius = radius,
+                center = centerOffset,
+                style = Stroke(width = strokeWidth)
+            )
+        } else if (animatedProgress > 0.01f) {
             drawArc(
                 color = accentColor,
                 startAngle = -90f,
-                sweepAngle = 360f * progress,
+                sweepAngle = 360f * animatedProgress,
                 useCenter = false,
-                topLeft = offset,
+                topLeft = topLeft,
                 size = arcSize,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             )
